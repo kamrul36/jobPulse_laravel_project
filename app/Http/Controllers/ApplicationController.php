@@ -12,7 +12,8 @@ class ApplicationController extends Controller
     public function applyJob(Request $request)
     {
 
-        $jobseeker_id = $request->user()->id;
+        // $jobseeker_id = $request->user()->id;
+        $jobseeker_id = $request->user_id;
         $job_id = $request->job_id;
 
         //get employer id from job_id

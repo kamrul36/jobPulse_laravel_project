@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helper\ResponseHelper;
 use App\Models\Employer;
 use App\Models\Job;
 use Illuminate\Http\Request;
@@ -13,7 +14,9 @@ class EmployerController extends Controller
     public function employers()
     {
         $employers = Employer::all();
-        return response()->json(['data' => $employers]);
+        return ResponseHelper::Out('v1', 'Get all employers', 'GET', $employers,200);
+
+        // return response()->json(['data' => $employers]);
 
     }
 

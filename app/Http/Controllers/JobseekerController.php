@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helper\ResponseHelper;
 use App\Models\Application;
 use App\Models\Job;
 use App\Models\Jobseeker;
@@ -60,11 +61,14 @@ class JobseekerController extends Controller
     }
     public function appliedJobs(Request $request)
     {
-        $logged_jobseeker = $request->user();
+        // $logged_jobseeker = $request->user();
+        $logged_jobseeker = $request->user_id;
 
-        $appliedJobs = Application::where('jobseeker_id', $logged_jobseeker->id)->with('job.employer')->get();
+        // $appliedJobs = Application::where('jobseeker_id', $logged_jobseeker->id)->with('job.employer')->get();
+        $appliedJobs = Application::where('jobseeker_id', $logged_jobseeker)->with('job.employer')->get();
 
-        return response()->json(['data' => $appliedJobs]);
+        return ResponseHelper::Out('v1', 'Get applied jobs', 'GET', $appliedJobs,200);
+
     }
 
     public function updateinfo(Request $request)

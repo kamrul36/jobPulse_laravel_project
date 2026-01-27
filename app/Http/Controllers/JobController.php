@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helper\ResponseHelper;
 use App\Models\Category;
 use App\Models\Job;
 use Illuminate\Http\Request;
@@ -34,7 +35,8 @@ class JobController extends Controller
         // $jobs = Job::where('status', 'active')->with('employer')->where('status', 'active');
         // return Jobresource::collection($jobs->paginate(8));
         $jobs = job::all();
-        return response()->json(['data' => $jobs]);
+        return ResponseHelper::Out('v1', 'Get Jobs', 'GET', $jobs,200);
+
     }
 
     public function featuredJobs()
@@ -138,6 +140,7 @@ class JobController extends Controller
         $job->location = $request->location;
 
         // $job->employer_id = $employer_id;
+        $job->employer_id = $request->employer_id;
         $job->experience = $request->experience;
         $job->type = $request->type;
         $job->status = 'Active';
