@@ -7,17 +7,26 @@ use App\Models\Employer;
 use App\Models\Job;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\URL;
-
 class EmployerController extends Controller
 {
 
     public function employers()
     {
-        $employers = Employer::all();
-        return ResponseHelper::Out('v1', 'Get all employers', 'GET', $employers,200);
-
-        // return response()->json(['data' => $employers]);
-
+        $employers = Employer::paginate(20);
+        return ResponseHelper::respond(
+            'v1',
+            'Get Jobs',
+            'GET',
+            200,
+            $employers->items(),
+            [
+                'current_page' => $employers->currentPage(),
+                'count' => $employers->perPage(),
+                'total_count' => $employers->total(),
+                'previous_page' => $employers->lastPage(),
+                // 'has_more_pages' => $jobs->hasMorePages(),
+            ]
+        );
     }
 
     public function employerPublicProfile($emp_id, $count_views = "no")
@@ -50,9 +59,31 @@ class EmployerController extends Controller
 
     public function jobs(Request $request)
     {
-        $employer_id = $request->user()->id;
-        $jobs = Job::where('employer_id', $employer_id)->with('employer')->where('status', '!=', 'deleted')->get();
-        return response()->json(['data' => $jobs]);
+        // $employer_id = $request->user()->id;
+        // $jobs = Job::where('employer_id', $employer_id)->with('employer')->where('status', '!=', 'deleted')->get();
+        // return response()->json(['data' => $jobs]);
+
+        try {
+            $employerId = $request->user()->id;
+
+            $jobs = Job::where('employer_id', $employerId)
+                ->where('status', '!=', 'deleted')
+                ->with('employer')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'message' => $jobs->isEmpty() ? 'No jobs found' : 'Jobs fetched successfully',
+                'data' => $jobs,
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch jobs',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
 
@@ -166,11 +197,15 @@ class EmployerController extends Controller
 
         return response()->json(
             [
-                'jobs' => $jobs, 'applications' => $application,
-                'views' => $views, 'messages' => $messages,
+                'jobs' => $jobs,
+                'applications' => $application,
+                'views' => $views,
+                'messages' => $messages,
 
             ]
-            , 200);
+            ,
+            200
+        );
 
     }
 

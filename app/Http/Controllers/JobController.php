@@ -10,12 +10,31 @@ use App\Http\Resources\Job as JobResource;
 
 class JobController extends Controller
 {
-    //
+    public function jobs()
+    {
+        $jobsQuery = Job::where('status', 'active')->with('employer');
 
-    public function show($id, $count_views="no")
+        $jobs = $jobsQuery->paginate(20);
+        return ResponseHelper::respond(
+            'v1',
+            'Get Jobs',
+            'GET',
+            200,
+            $jobs->items(),
+            [
+                'current_page' => $jobs->currentPage(),
+                'count' => $jobs->perPage(),
+                'total_count' => $jobs->total(),
+                'previous_page' => $jobs->lastPage(),
+                // 'has_more_pages' => $jobs->hasMorePages(),
+            ]
+        );
+    }
+
+    public function show($id, $count_views = "no")
     {
         $job = Job::findOrFail($id);
-        if ($count_views=="yes") {
+        if ($count_views == "yes") {
             $count_views = $job->value('views');
 
             $job->views = $count_views + 1;
@@ -28,15 +47,6 @@ class JobController extends Controller
         }
 
         return response()->json(['data' => $job->with('employer')->where('id', $id)->get()]);
-    }
-
-    public function jobs()
-    {
-        // $jobs = Job::where('status', 'active')->with('employer')->where('status', 'active');
-        // return Jobresource::collection($jobs->paginate(8));
-        $jobs = job::all();
-        return ResponseHelper::Out('v1', 'Get Jobs', 'GET', $jobs,200);
-
     }
 
     public function featuredJobs()
@@ -98,7 +108,7 @@ class JobController extends Controller
 
             ->where('title', 'like', '%' . $search_key . '%')
 
-        // ->where('skill', 'like', '%' . $search_key . '%')
+            // ->where('skill', 'like', '%' . $search_key . '%')
 
             ->with('employer')->where('status', 'active');
 

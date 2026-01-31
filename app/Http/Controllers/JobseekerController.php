@@ -67,7 +67,7 @@ class JobseekerController extends Controller
         // $appliedJobs = Application::where('jobseeker_id', $logged_jobseeker->id)->with('job.employer')->get();
         $appliedJobs = Application::where('jobseeker_id', $logged_jobseeker)->with('job.employer')->get();
 
-        return ResponseHelper::Out('v1', 'Get applied jobs', 'GET', $appliedJobs,200);
+        return ResponseHelper::respond('v1', 'Get applied jobs', 'GET' ,200, $appliedJobs);
 
     }
 
