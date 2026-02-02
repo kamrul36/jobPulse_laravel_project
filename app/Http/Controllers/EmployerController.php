@@ -15,7 +15,7 @@ class EmployerController extends Controller
         $employers = Employer::paginate(20);
         return ResponseHelper::respond(
             'v1',
-            'Get Jobs',
+            'Get Employers',
             'GET',
             200,
             $employers->items(),
@@ -23,8 +23,8 @@ class EmployerController extends Controller
                 'current_page' => $employers->currentPage(),
                 'count' => $employers->perPage(),
                 'total_count' => $employers->total(),
-                'previous_page' => $employers->lastPage(),
-                // 'has_more_pages' => $jobs->hasMorePages(),
+                'has_more_pages' => $employers->hasMorePages(),
+                // 'previous_page' => $employers->lastPage(),
             ]
         );
     }

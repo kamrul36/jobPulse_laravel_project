@@ -26,17 +26,17 @@ return new class extends Migration
             $table->string('isVerified')->nullable();
             $table->string('phone')->nullable();
             $table->text('website')->nullable();
-            $table->string('status')->nullable();
+            $table->boolean('status')->default(0);
             $table->string('facebook')->nullable();
             $table->string('twitter')->nullable();
             $table->string('youtube')->nullable();
             $table->string('github')->nullable();
            
-            $table->string('views')->default('0');
+            $table->integer('views')->default(0);
 
-            $table->string('isFeatued')->nullable();
+            $table->boolean('isFeatued')->default(0);
             $table->string('last_login')->nullable();
-            $table->boolean('active')->default(false);
+            $table->boolean('active')->default(0);
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });

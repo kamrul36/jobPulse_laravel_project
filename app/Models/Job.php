@@ -22,4 +22,9 @@ class Job extends Model
         return $this->hasMany(Category::class);
     }
 
+    protected $casts = [
+        'status' => 'boolean',
+        'isFeatured' => 'boolean',
+    ];
+
 }

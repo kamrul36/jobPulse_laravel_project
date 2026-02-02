@@ -12,7 +12,7 @@ class JobController extends Controller
 {
     public function jobs()
     {
-        $jobsQuery = Job::where('status', 'active')->with('employer');
+        $jobsQuery = Job::where('status', true)->with('employer');
 
         $jobs = $jobsQuery->paginate(20);
         return ResponseHelper::respond(
@@ -25,8 +25,8 @@ class JobController extends Controller
                 'current_page' => $jobs->currentPage(),
                 'count' => $jobs->perPage(),
                 'total_count' => $jobs->total(),
-                'previous_page' => $jobs->lastPage(),
-                // 'has_more_pages' => $jobs->hasMorePages(),
+                'has_more_pages' => $jobs->hasMorePages(),
+                // 'previous_page' => $jobs->lastPage(),
             ]
         );
     }

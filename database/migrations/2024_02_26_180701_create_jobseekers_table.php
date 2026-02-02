@@ -33,9 +33,9 @@ return new class extends Migration
             $table->string('youtube')->nullable();
             $table->string('github')->nullable();
             $table->string('views')->default('0');
-            $table->string('isFeatured')->nullable();
+            $table->boolean('isFeatured')->default(0);
             // $table->string('last_login')->nullable();
-            $table->boolean('active')->default(false);
+            $table->boolean('active')->default(0);
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });

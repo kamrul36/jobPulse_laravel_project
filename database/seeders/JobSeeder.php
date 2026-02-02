@@ -26,7 +26,7 @@ class JobSeeder extends Seeder
             'type' => 'full_time',
             // 'employer_id' => '1',
             'experience' => '4 years',
-            'status' => 'active'
+            'status' => true
 
         ]);
         Job::create([
@@ -42,7 +42,7 @@ class JobSeeder extends Seeder
             'type' => 'remote',
             // 'employer_id' => '1',
             'experience' => '5 years',
-            'status' => 'active'
+            'status' => true
             
         ]);
         Job::create([
@@ -58,7 +58,7 @@ class JobSeeder extends Seeder
             'type' => 'freelance',
             // 'employer_id' => '1',
             'experience' => '3 years',
-            'status' => 'active'
+            'status' => true
 
         ]);
     }

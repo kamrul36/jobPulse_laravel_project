@@ -10,7 +10,15 @@ class Employer extends Model
 {
     use HasFactory;
 
-    public function jobs():HasMany {
+    public function jobs(): HasMany
+    {
         return $this->hasMany(Job::class);
     }
+
+    protected $casts = [
+        'status' => 'boolean',
+        'isFeatued' => 'boolean',
+        'active' => 'boolean',
+        'email_verified_at' => 'datetime',
+    ];
 }

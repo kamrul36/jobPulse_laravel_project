@@ -22,18 +22,18 @@ Route::group(['prefix' => 'v1'], function () {
 
     Route::get('/', [HomeController::class, 'index']);
 
+    Route::get('jobs', [JobController::class, 'jobs']);
+
+    Route::get('employers', [EmployerController::class, 'employers']);
 
     Route::get('categories', [CategoryController::class, 'index']);
 
-    Route::get('job/{id}/{count_views?}', [JobController::class, 'show']);
+    Route::get('job/{id}/{count_views?}', [JobController::class, 'sh    ow']);
 
     Route::get('featured-jobs', [JobController::class, 'featuredJobs']);
 
     // Route::get('recent-jobs', [JobController::class, 'recentJobs']);
 
-    Route::get('jobs', [JobController::class, 'jobs']);
-
-    Route::get('employers', [EmployerController::class, 'employers']);
 
     Route::get('jobseekers', [JobseekerController::class, 'jobseekers']);
 
@@ -141,6 +141,9 @@ Route::group(['prefix' => 'v1'], function () {
         // Route::group(['middleware' => ['auth:employer', 'scope:employer']], function () {
         // authenticated Employer routes here
         // authenticated jobseeker routes here
+
+
+
         Route::post('info', [EmployerController::class, 'info']);
 
         Route::post('updateinfo', [EmployerController::class, 'updateinfo']);

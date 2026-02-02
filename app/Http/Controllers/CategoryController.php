@@ -10,8 +10,20 @@ class CategoryController extends Controller
 {
     public function index()
     {
-        $category = Category::all();
-        return ResponseHelper::Out('v1', 'Get all categories', 'GET', $category,200);
-        // return response()->json(['data' => $category]);
+        $category = Category::paginate(20);
+        return ResponseHelper::respond(
+            'v1',
+            'Get Jobs',
+            'GET',
+            200,
+            $category->items(),
+            [
+                'current_page' => $category->currentPage(),
+                'count' => $category->perPage(),
+                'total_count' => $category->total(),
+                'has_more_pages' => $category->hasMorePages(),
+                // 'previous_page' => $category->lastPage(),
+            ]
+        );
     }
 }
