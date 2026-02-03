@@ -21,7 +21,7 @@ class CategoryController extends Controller
                 'current_page' => $category->currentPage(),
                 'count' => $category->perPage(),
                 'total_count' => $category->total(),
-                'has_more_pages' => $category->hasMorePages(),
+                // 'has_more_pages' => $category->hasMorePages(),
                 // 'previous_page' => $category->lastPage(),
             ]
         );
