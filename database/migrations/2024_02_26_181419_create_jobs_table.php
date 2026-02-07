@@ -25,8 +25,8 @@ return new class extends Migration
             $table->string('experience')->nullable();//disable this in production
             $table->enum('type',['full_time','remote','part_time','project_basis','freelance']);
             $table->unsignedBigInteger('category_id')->nullable();
-            $table->foreign('category_id')->references('id')->on('categories');
             $table->unsignedBigInteger('employer_id')->nullable();
+            $table->foreign('category_id')->references('id')->on('categories');
             $table->foreign('employer_id')->references('id')->on('employers');
             $table->boolean('isFeatured')->default(0);
             $table->boolean('status')->default(0);

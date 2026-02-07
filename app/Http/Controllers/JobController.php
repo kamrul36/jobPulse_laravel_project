@@ -31,6 +31,107 @@ class JobController extends Controller
         );
     }
 
+    public function create(Request $request)
+    {
+        // $employer_id = $request->user()->id;
+        // $employer_id = '1';
+
+        $validated = $request->validate([
+            'title' => 'required| max:255',
+            'category_id' => 'required | numeric',
+            'description' => 'required',
+            'skills' => 'required',
+            'salary' => 'required',
+            'deadline' => 'required',
+            'open_position' => 'required',
+            'location' => 'required',
+            'type' => 'required',
+            'experience' => 'required',
+        ]);
+
+        $job = new Job();
+        $job->title = $request->title;
+        $job->category_id = $request->category_id;
+        $job->description = $request->description;
+        $job->skills = $request->skills;
+        $job->salary = $request->salary;
+        $job->deadline = $request->deadline;
+        $job->open_position = $request->open_position;
+        $job->location = $request->location;
+
+        // $job->employer_id = $employer_id;
+        // $job->employer_id = $request->employer_id;
+        $job->experience = $request->experience;
+        $job->type = $request->type;
+        $job->status = 'Active';
+
+        if ($job->save()) {
+
+            return response()->json(['data' => $job, 'message' => 'You have added a new job.']);
+        } else {
+            return response()->json(['message' => 'Failed to create a new job.'], 500);
+
+        }
+    }
+
+    public function update(Request $request)
+    {
+        $employer_id = $request->user()->id;
+
+        $validated = $request->validate([
+            'title' => 'required',
+            'category_id' => 'required',
+            'description' => 'required',
+            'skills' => 'required',
+            'salary' => 'required',
+            'deadline' => 'required',
+            'open_position' => 'required',
+            'location' => 'required',
+            'type' => 'required',
+            'job_id' => 'required',
+            'experience' => 'required',
+        ]);
+        $employer_id = $request->user()->id;
+
+        $job = Job::where('id', $request->job_id)->where('employer_id', $employer_id)->first();
+
+        $job->title = $request->title;
+        $job->category_id = $request->category_id;
+        $job->description = $request->description;
+        $job->skills = $request->skills;
+        $job->salary = $request->salary;
+        $job->deadline = $request->deadline;
+        $job->open_position = $request->open_position;
+        $job->location = $request->location;
+
+        $job->employer_id = $employer_id;
+        $job->experience = $request->experience;
+        $job->type = $request->type;
+
+        if ($job->save()) {
+
+            return response()->json(['data' => $job, 'message' => 'You have updated job data.']);
+        } else {
+            return response()->json(['message' => 'Failed to update job.'], 500);
+
+        }
+    }
+
+    public function destroyJob(Request $request)
+    {
+        $employer_id = $request->user()->id;
+        $job = Job::where('id', $request->job_id)->where('employer_id', $employer_id)->first();
+
+        $job->status = 'deleted';
+        if ($job->save()) {
+
+            return response()->json(['data' => $job, 'message' => 'You have deleted job.']);
+        } else {
+            return response()->json(['message' => 'Failed to delete job.'], 500);
+
+        }
+    }
+
     public function show($id, $count_views = "no")
     {
         $job = Job::findOrFail($id);
@@ -121,106 +222,7 @@ class JobController extends Controller
         return response()->json(['data' => $jobs->get()]);
     }
 
-    public function create(Request $request)
-    {
-        // $employer_id = $request->user()->id;
-        // $employer_id = '1';
 
-        $validated = $request->validate([
-            'title' => 'required| max:255',
-            'category_id' => 'required | numeric',
-            'description' => 'required',
-            'skills' => 'required',
-            'salary' => 'required',
-            'deadline' => 'required',
-            'open_position' => 'required',
-            'location' => 'required',
-            'type' => 'required',
-            'experience' => 'required',
-        ]);
-
-        $job = new Job();
-        $job->title = $request->title;
-        $job->category_id = $request->category_id;
-        $job->description = $request->description;
-        $job->skills = $request->skills;
-        $job->salary = $request->salary;
-        $job->deadline = $request->deadline;
-        $job->open_position = $request->open_position;
-        $job->location = $request->location;
-
-        // $job->employer_id = $employer_id;
-        $job->employer_id = $request->employer_id;
-        $job->experience = $request->experience;
-        $job->type = $request->type;
-        $job->status = 'Active';
-
-        if ($job->save()) {
-
-            return response()->json(['data' => $job, 'message' => 'You have added a new job.']);
-        } else {
-            return response()->json(['message' => 'Failed to create new job.'], 500);
-
-        }
-    }
-
-    public function update(Request $request)
-    {
-        $employer_id = $request->user()->id;
-
-        $validated = $request->validate([
-            'title' => 'required',
-            'category_id' => 'required',
-            'description' => 'required',
-            'skills' => 'required',
-            'salary' => 'required',
-            'deadline' => 'required',
-            'open_position' => 'required',
-            'location' => 'required',
-            'type' => 'required',
-            'job_id' => 'required',
-            'experience' => 'required',
-        ]);
-        $employer_id = $request->user()->id;
-
-        $job = Job::where('id', $request->job_id)->where('employer_id', $employer_id)->first();
-
-        $job->title = $request->title;
-        $job->category_id = $request->category_id;
-        $job->description = $request->description;
-        $job->skills = $request->skills;
-        $job->salary = $request->salary;
-        $job->deadline = $request->deadline;
-        $job->open_position = $request->open_position;
-        $job->location = $request->location;
-
-        $job->employer_id = $employer_id;
-        $job->experience = $request->experience;
-        $job->type = $request->type;
-
-        if ($job->save()) {
-
-            return response()->json(['data' => $job, 'message' => 'You have updated job data.']);
-        } else {
-            return response()->json(['message' => 'Failed to update job.'], 500);
-
-        }
-    }
-
-    public function destroyJob(Request $request)
-    {
-        $employer_id = $request->user()->id;
-        $job = Job::where('id', $request->job_id)->where('employer_id', $employer_id)->first();
-
-        $job->status = 'deleted';
-        if ($job->save()) {
-
-            return response()->json(['data' => $job, 'message' => 'You have deleted job.']);
-        } else {
-            return response()->json(['message' => 'Failed to delete job.'], 500);
-
-        }
-    }
 
     public function closeJob(Request $request)
     {
