@@ -2,12 +2,15 @@
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ApplicationController;
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\EmployerController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\JobController;
 use App\Http\Controllers\JobseekerController;
 use App\Http\Controllers\PageController;
+use App\Http\Controllers\RoleController;
+use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -16,8 +19,43 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+
+// Protected routes (require JWT token)
+Route::middleware(['jwt.auth'])->group(function () {
+    // Auth routes
+    Route::prefix('v1')->group(function () {
+        Route::post('/logout', [AuthController::class, 'logout']);
+        Route::post('/refresh', [AuthController::class, 'refresh']);
+        Route::get('/me', [AuthController::class, 'me']);
+    });
+
+    // User routes
+    Route::prefix('user')->group(function () {
+        Route::put('/profile', [UserController::class, 'updateProfile']);
+        Route::post('/deactivate', [UserController::class, 'deactivate']);
+    });
+
+    // Role management routes (Admin & Super Admin)
+    Route::prefix('roles')->group(function () {
+        Route::get('/', [RoleController::class, 'index']);
+        Route::post('/', [RoleController::class, 'create']);
+        Route::get('/users', [RoleController::class, 'getUsers']);
+        Route::put('/users/{userId}', [RoleController::class, 'updateUserRole']);
+    });
+});
+
+
+
 Route::group(['prefix' => 'v1'], function () {
 
+
+    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/request-otp', [AuthController::class, 'requestOTP']);
+    Route::post('/verify-email', [AuthController::class, 'verifyEmail']);
+    Route::post('/verify-phone', [AuthController::class, 'verifyPhone']);
+    Route::post('/reset-password', [AuthController::class, 'resetPassword']);
+    Route::post('/reactivate', [UserController::class, 'reactivate']);
 
 
     Route::get('/', [HomeController::class, 'index']);
