@@ -12,7 +12,7 @@ class ResponseHelper
         string $msg,
         string $method,
         int $code,
-         $data = null,
+        $data = null,
         array $pagination = null
     ): JsonResponse {
         $response = [
@@ -21,16 +21,13 @@ class ResponseHelper
             'operation' => $msg,
             'method' => $method,
         ];
-
         // Only include data if it's provided
         if (!is_null($data)) {
             $response['data'] = $data;
         }
-
         if ($pagination) {
             $response['pagination'] = $pagination;
         }
-
         return response()->json($response, $code);
     }
 }

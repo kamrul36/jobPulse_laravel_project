@@ -30,14 +30,14 @@ Route::middleware(['jwt.auth'])->group(function () {
     });
 
     // User routes
-    Route::prefix('user')->group(function () {
-        Route::put('/profile', [UserController::class, 'updateProfile']);
+    Route::prefix('v1')->group(function () {
+        Route::put('/user/profile', [UserController::class, 'updateProfile']);
         Route::post('/deactivate', [UserController::class, 'deactivate']);
     });
 
     // Role management routes (Admin & Super Admin)
-    Route::prefix('roles')->group(function () {
-        Route::get('/', [RoleController::class, 'index']);
+    Route::prefix('v1')->group(function () {
+        Route::get('/', action: [RoleController::class, 'index']);
         Route::post('/', [RoleController::class, 'create']);
         Route::get('/users', [RoleController::class, 'getUsers']);
         Route::put('/users/{userId}', [RoleController::class, 'updateUserRole']);

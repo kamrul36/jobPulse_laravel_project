@@ -23,35 +23,46 @@ class AuthController extends Controller
             'name' => 'required|string|max:50',
             'email' => 'required|email|unique:users',
             'phone' => 'nullable|string|unique:users',
-            'password' => 'required|string|min:8|confirmed',
+            'password' => 'required|string|min:8',
+            'candidate' => 'required|boolean',
+            'employer' => 'required|boolean',
         ]);
 
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
                 'errors' => $validator->errors()
-            ], 422);
+            ], 400);
+        }
+
+        // Ensure exactly one role is true
+        if ($request->candidate === $request->employer) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Exactly one role must be selected'
+            ], 400);
         }
 
         try {
-            // Get default user role
-            $userRole = Role::where('slug', 'user')->first();
+            $roleSlug = $request->candidate ? 'candidate' : 'employer';
+
+            $role = Role::where('slug', $roleSlug)->firstOrFail();
 
             $user = User::create([
                 'username' => $request->username,
                 'name' => $request->name,
                 'email' => $request->email,
                 'phone' => $request->phone,
-                'password' => $request->password,
-                'role_id' => $userRole->id,
+                'password' => bcrypt($request->password),
+                'role_id' => $role->id,
                 'is_active' => true,
             ]);
 
-            // Generate and send email verification OTP
             $otp = JWTHelper::generateOTP();
+
             $user->update([
                 'otp' => $otp,
-                'otp_expires_at' => Carbon::now()->addMinutes(10),
+                'otp_expires_at' => now()->addMinutes(2),
             ]);
 
             JWTHelper::sendOTPEmail($user, $otp);
@@ -60,19 +71,18 @@ class AuthController extends Controller
                 'success' => true,
                 'message' => 'User registered successfully. Please verify your email.',
                 'data' => [
-                    'user' => [
-                        'id' => $user->id,
-                        'username' => $user->username,
-                        'email' => $user->email,
-                    ]
+                    'id' => $user->id,
+                    'username' => $user->username,
+                    'role' => $roleSlug
                 ]
             ], 200);
+
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Registration failed',
-                'error' => $e->getMessage()
-            ], 400);
+                'error' => $e->getMessage(),
+            ], 500);
         }
     }
 
@@ -89,16 +99,6 @@ class AuthController extends Controller
     //        "verification_id": "7ece8c9e-051c-11f1-890c-3db743ab6e34"}
 
 
-    
-//  log in response:
-    // {
-    //     "version": "v6", 
-    //     "success": true,
-    //      "method": "POST", 
-    //      "operation": "Login.", 
-    //      "expires_in": 360000, 
-    //      "at": ""}
-
     /**
      * Login user
      */
@@ -113,7 +113,7 @@ class AuthController extends Controller
             return response()->json([
                 'success' => false,
                 'errors' => $validator->errors()
-            ], 422);
+            ], 400);
         }
 
         try {
@@ -156,18 +156,12 @@ class AuthController extends Controller
 
             return response()->json([
                 'success' => true,
+                'method' => 'POST',
+                'operation' => 'Login',
                 'message' => 'Login successful',
-                'data' => [
-                    'access_token' => $token,
-                    'token_type' => 'bearer',
-                    'expires_in' => $jwtService->getTTL(),
-                    'user' => [
-                        'id' => $user->id,
-                        'username' => $user->username,
-                        'email' => $user->email,
-                        'role' => $user->role->name,
-                    ]
-                ]
+                "id" => $user->id,
+                'expires_in' => $jwtService->getTTL(),
+                'at' => $token
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
@@ -177,6 +171,15 @@ class AuthController extends Controller
             ], 500);
         }
     }
+
+    //  log in response:
+    // {
+    //     "version": "v6", 
+    //     "success": true,
+    //      "method": "POST", 
+    //      "operation": "Login.", 
+    //      "expires_in": 360000, 
+    //      "at": ""}
 
 
     /**

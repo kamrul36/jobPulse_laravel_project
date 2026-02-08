@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
@@ -21,9 +22,10 @@ return new class extends Migration {
 
         // Insert default roles
         DB::table('roles')->insert([
-            ['name' => 'Super Admin', 'slug' => 'super_admin', 'created_at' => now(), 'updated_at' => now()],
-            ['name' => 'Admin', 'slug' => 'admin', 'created_at' => now(), 'updated_at' => now()],
-            ['name' => 'User', 'slug' => 'user', 'created_at' => now(), 'updated_at' => now()],
+            ['name' => 'Super Admin', 'slug' => 'super_admin', 'description' => 'Full system access', 'created_at' => now(), 'updated_at' => now()],
+            ['name' => 'Admin', 'slug' => 'admin', 'description' => 'Administrative access', 'created_at' => now(), 'updated_at' => now()],
+            ['name' => 'Candidate', 'slug' => 'candidate', 'description' => 'Job seeker user', 'created_at' => now(), 'updated_at' => now()],
+            ['name' => 'Employer', 'slug' => 'employer', 'description' => 'Job poster user', 'created_at' => now(), 'updated_at' => now()],
         ]);
     }
 

@@ -28,12 +28,11 @@ class JWTService
     public function generateToken(User $user): string
     {
         $payload = [
-            'iss' => config('app.url'),
-            'sub' => $user->id,
-            'iat' => time(),
-            'exp' => time() + $this->ttl,
             'username' => $user->username,
             'role' => $user->role->slug,
+            'iss' => config('app.url'),
+            'iat' => time(),
+            'exp' => time() + $this->ttl,
         ];
 
         return JWT::encode($payload, $this->secret, $this->algo);

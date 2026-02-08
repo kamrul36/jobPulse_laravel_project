@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use App\Services\JWTService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -9,7 +10,7 @@ use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
-     /**
+    /**
      * Update user profile
      */
     public function updateProfile(Request $request)
@@ -27,7 +28,6 @@ class UserController extends Controller
             }
 
             $validator = Validator::make($request->all(), [
-                'username' => 'sometimes|string|unique:users,username,' . $user->id . '|min:3|max:50',
                 'email' => 'sometimes|email|unique:users,email,' . $user->id,
                 'phone' => 'sometimes|string|unique:users,phone,' . $user->id,
                 'current_password' => 'sometimes|required_with:new_password|string',
@@ -43,9 +43,12 @@ class UserController extends Controller
 
             $updateData = [];
 
-            // Update username
+            // Username cannot be updated
             if ($request->has('username')) {
-                $updateData['username'] = $request->username;
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Username cannot be updated'
+                ], 400);
             }
 
             // Update email (requires re-verification)
@@ -91,6 +94,115 @@ class UserController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Profile update failed',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+
+    /**
+     * Deactivate user account (soft delete)
+     */
+    public function deactivate(Request $request)
+    {
+        try {
+            $jwtService = new JWTService();
+            $token = $jwtService->getTokenFromRequest();
+            $user = $jwtService->getUserFromToken($token);
+
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized'
+                ], 401);
+            }
+
+            $validator = Validator::make($request->all(), [
+                'password' => 'required|string',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            if (!Hash::check($request->password, $user->password)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Password is incorrect'
+                ], 400);
+            }
+
+            // Soft delete or deactivate
+            $user->update(['is_active' => false]);
+            $user->delete(); // This will soft delete
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Account deactivated successfully'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Deactivation failed',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Reactivate user account
+     */
+    public function reactivate(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'credential' => 'required|string',
+            'password' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $user = User::withTrashed()
+                ->where(function ($query) use ($request) {
+                    $query->where('username', $request->credential)
+                        ->orWhere('email', $request->credential)
+                        ->orWhere('phone', $request->credential);
+                })
+                ->first();
+
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not found'
+                ], 404);
+            }
+
+            if (!Hash::check($request->password, $user->password)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid credentials'
+                ], 401);
+            }
+
+            $user->restore();
+            $user->update(['is_active' => true]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Account reactivated successfully'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Reactivation failed',
                 'error' => $e->getMessage()
             ], 500);
         }
