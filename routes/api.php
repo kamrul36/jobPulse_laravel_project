@@ -15,47 +15,52 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
-
-
-// Protected routes (require JWT token)
-Route::middleware(['jwt.auth'])->group(function () {
-    // Auth routes
-    Route::prefix('v1')->group(function () {
-        Route::post('/logout', [AuthController::class, 'logout']);
-        Route::post('/refresh', [AuthController::class, 'refresh']);
-        Route::get('/me', [AuthController::class, 'me']);
-    });
-
-    // User routes
-    Route::prefix('v1')->group(function () {
-        Route::put('/user/profile', [UserController::class, 'updateProfile']);
-        Route::post('/deactivate', [UserController::class, 'deactivate']);
-    });
-
-    // Role management routes (Admin & Super Admin)
-    Route::prefix('v1')->group(function () {
-        Route::get('/', action: [RoleController::class, 'index']);
-        Route::post('/', [RoleController::class, 'create']);
-        Route::get('/users', [RoleController::class, 'getUsers']);
-        Route::put('/users/{userId}', [RoleController::class, 'updateUserRole']);
-    });
-});
-
-
 
 Route::group(['prefix' => 'v1'], function () {
 
 
-    Route::post('/register', [AuthController::class, 'register']);
+    // Protected routes (require JWT token)
+    Route::middleware(['jwt.auth'])->group(function () {
+        // Auth routes
+
+        Route::post('/logout', [AuthController::class, 'logout']);
+
+        Route::post('/refresh', [AuthController::class, 'refresh']);
+
+        // User routes
+
+        Route::get('/current-user', [AuthController::class, 'user']);
+
+        Route::put('/update-profile', [UserController::class, 'updateProfile']);
+
+        Route::post('/user-deactivate', [UserController::class, 'deactivate']);
+
+        // Role management routes (Admin & Super Admin)
+
+        Route::get('/admin-role-management', [RoleController::class, 'index']);
+
+        Route::post('/admin-role-management', [RoleController::class, 'create']);
+
+        Route::put('/admin-role-management/{userId}', [RoleController::class, 'updateUserRole']);
+
+        Route::get('/admin-get-users', [RoleController::class, 'getUsers']);
+
+    });
+
     Route::post('/login', [AuthController::class, 'login']);
+
+    Route::post('/register', [AuthController::class, 'register']);
+
     Route::post('/request-otp', [AuthController::class, 'requestOTP']);
+
     Route::post('/verify-email', [AuthController::class, 'verifyEmail']);
+
     Route::post('/verify-phone', [AuthController::class, 'verifyPhone']);
+
     Route::post('/reset-password', [AuthController::class, 'resetPassword']);
+
     Route::post('/reactivate', [UserController::class, 'reactivate']);
+
 
 
     Route::get('/', [HomeController::class, 'index']);
@@ -66,7 +71,7 @@ Route::group(['prefix' => 'v1'], function () {
 
     Route::get('categories', [CategoryController::class, 'index']);
 
-    Route::get('job/{id}/{count_views?}', [JobController::class, 'sh    ow']);
+    Route::get('job/{id}/{count_views?}', [JobController::class, 'show']);
 
     Route::get('featured-jobs', [JobController::class, 'featuredJobs']);
 
@@ -82,66 +87,55 @@ Route::group(['prefix' => 'v1'], function () {
     Route::get('query-jobs', [JobController::class, 'queryJobs']);
 
 
-    Route::group(['prefix' => 'admin'], function () {
-
-        //admin routes
-        Route::post('login', [AdminController::class, 'login']);
-
-        // Route::group(['middleware' => ['auth:admin', 'scope:admin', 'cors']], function () {
-        //only authenticated admin only
-
-        // Route::post('logout', [AuthController::class, 'logout']);
-
-        Route::get('dash-info', [AdminController::class, 'dashInfo']);
-
-        Route::get('applications', [AdminController::class, 'applications']);
-
-        Route::post('cancel-application', [AdminController::class, 'cancelApplication']);
+    Route::middleware(['jwt.auth'])->group(function () {
 
 
-        Route::post('create-job', [AdminController::class, 'createJob']);
+        Route::group(['prefix' => 'admin'], function () {
 
-        Route::post('update-job', [AdminController::class, 'updateJob']);
+            //only authenticated admin only
+            //admin routes
 
-        Route::post('close-job', [AdminController::class, 'closeJob']);
+            Route::get('dash-info', [AdminController::class, 'dashInfo']);
 
-        Route::post('active-job', [AdminController::class, 'activeJob']);
+            Route::get('applications', [AdminController::class, 'applications']);
 
-        Route::post('delete-job', [AdminController::class, 'destroyJob']);
+            Route::post('cancel-application', [AdminController::class, 'cancelApplication']);
 
-        Route::get('jobseeker/{id}', [AdminController::class, 'showJobseeker']);
+            Route::post('create-job', [AdminController::class, 'createJob']);
 
-        Route::post('create-jobseeker', [AdminController::class, 'createJobseeker']);
+            Route::post('update-job', [AdminController::class, 'updateJob']);
 
-        Route::post('update-jobseeker', [AdminController::class, 'updateJobseeker']);
+            Route::post('close-job', [AdminController::class, 'closeJob']);
 
-        Route::post('delete-jobseeker', [AdminController::class, 'destroyJobseeker']);
+            Route::post('active-job', [AdminController::class, 'activeJob']);
 
-        Route::get('employer/{id}', [AdminController::class, 'showEmployer']);
+            Route::post('delete-job', [AdminController::class, 'destroyJob']);
 
-        Route::post('create-employer', [AdminController::class, 'createEmployer']);
+            Route::get('jobseeker/{id}', [AdminController::class, 'showJobseeker']);
 
-        Route::post('update-employer', [AdminController::class, 'updateEmployer']);
+            Route::post('create-jobseeker', [AdminController::class, 'createJobseeker']);
 
-        Route::post('delete-employer', [AdminController::class, 'destroyEmployer']);
+            Route::post('update-jobseeker', [AdminController::class, 'updateJobseeker']);
 
-        //only authenticated admin only
-        // });
+            Route::post('delete-jobseeker', [AdminController::class, 'destroyJobseeker']);
 
+            Route::get('employer/{id}', [AdminController::class, 'showEmployer']);
+
+            Route::post('create-employer', [AdminController::class, 'createEmployer']);
+
+            Route::post('update-employer', [AdminController::class, 'updateEmployer']);
+
+            Route::post('delete-employer', [AdminController::class, 'destroyEmployer']);
+
+        });
     });
-
 
 
     Route::group(['prefix' => 'jobseeker'], function () {
 
-        // Route::post('register', [JobseekerController::class, 'register']);
-
-        // Route::post('login', [JobseekerController::class, 'login']);
-
         //unauthenticated routes for jobseeker here
-
-        // Route::group(['middleware' => ['auth:jobseeker', 'scope:jobseeker', 'cors']], function () {
         // authenticated jobseeker routes here
+
         Route::post('info', [JobseekerController::class, 'info']);
 
         Route::post('updateinfo', [JobseekerController::class, 'updateinfo']);
@@ -164,23 +158,11 @@ Route::group(['prefix' => 'v1'], function () {
 
         Route::post('cancel-application', [ApplicationController::class, 'cancelApplication']);
 
-        // Route::post('logout', [AuthController::class, 'logout']);
-        // });
     });
 
     Route::group(['prefix' => 'employer'], function () {
 
-        // Route::post('register', [EmployerController::class, 'register']);
-
-        // Route::post('login', [EmployerController::class, 'login']);
-
         //unauthenticated routes for employer here
-
-        // Route::group(['middleware' => ['auth:employer', 'scope:employer']], function () {
-        // authenticated Employer routes here
-        // authenticated jobseeker routes here
-
-
 
         Route::post('info', [EmployerController::class, 'info']);
 
@@ -204,8 +186,6 @@ Route::group(['prefix' => 'v1'], function () {
 
         Route::post('delete-job', [JobController::class, 'destroyJob']);
 
-        // Route::post('logout', [AuthController::class, 'logout']);
-
         Route::get('jobs-applications', [EmployerController::class, 'jobsApplications']);
 
         Route::post('accept-application', [ApplicationController::class, 'acceptApplication']);
@@ -214,7 +194,6 @@ Route::group(['prefix' => 'v1'], function () {
 
         Route::post('interview-call', [ApplicationController::class, 'interviewCall']);
 
-        // });
     });
 
 });

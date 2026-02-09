@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helper\ResponseHelper;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\JWTService;
@@ -10,7 +11,7 @@ use Illuminate\Support\Facades\Validator;
 
 class RoleController extends Controller
 {
-   /**
+    /**
      * Get all roles
      */
     public function index(Request $request)
@@ -105,18 +106,24 @@ class RoleController extends Controller
 
             $role = Role::find($request->role_id);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'User role updated successfully',
-                'data' => [
-                    'user' => [
-                        'id' => $user->id,
-                        'username' => $user->username,
-                        'email' => $user->email,
-                        'role' => $role->name,
-                    ]
-                ]
-            ], 200);
+            return ResponseHelper::respond(
+                'v1',
+                'User role updated successfully',
+                'PUT',
+                200
+            );
+            // return response()->json([
+            //     'success' => true,
+            //     'message' => 'User role updated successfully',
+            //     'data' => [
+            //         'user' => [
+            //             'id' => $user->id,
+            //             'username' => $user->username,
+            //             'email' => $user->email,
+            //             'role' => $role->name,
+            //         ]
+            //     ]
+            // ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -216,10 +223,14 @@ class RoleController extends Controller
                 ];
             });
 
-            return response()->json([
-                'success' => true,
-                'data' => ['users' => $users]
-            ], 200);
+            return ResponseHelper::respond(
+                'v1',
+                'Get Users',
+                'GET',
+                200,
+                $users,
+
+            );
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,

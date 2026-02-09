@@ -99,7 +99,6 @@ class UserController extends Controller
         }
     }
 
-
     /**
      * Deactivate user account (soft delete)
      */

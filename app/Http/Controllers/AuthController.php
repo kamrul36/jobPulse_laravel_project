@@ -461,7 +461,7 @@ class AuthController extends Controller
     /**
      * Get authenticated user
      */
-    public function me(Request $request)
+    public function user(Request $request)
     {
         try {
             $jwtService = new JWTService();

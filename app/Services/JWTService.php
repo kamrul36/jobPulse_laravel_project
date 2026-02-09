@@ -28,7 +28,8 @@ class JWTService
     public function generateToken(User $user): string
     {
         $payload = [
-            'username' => $user->username,
+            'sub' => $user->username,
+            'id' => $user->id,
             'role' => $user->role->slug,
             'iss' => config('app.url'),
             'iat' => time(),
@@ -59,13 +60,13 @@ class JWTService
     {
         try {
             $decoded = $this->decodeToken($token);
-            
+
             // Check if token is blacklisted
             if ($this->isBlacklisted($token)) {
                 return null;
             }
 
-            return User::find($decoded->sub);
+            return User::find($decoded->id);
         } catch (\Exception $e) {
             return null;
         }
@@ -78,7 +79,7 @@ class JWTService
     {
         try {
             $decoded = $this->decodeToken($token);
-            $user = User::find($decoded->sub);
+            $user = User::find($decoded->id);
 
             if (!$user) {
                 throw new \Exception('User not found');
@@ -102,7 +103,7 @@ class JWTService
         try {
             $decoded = $this->decodeToken($token);
             $expiresAt = $decoded->exp - time();
-            
+
             if ($expiresAt > 0) {
                 Cache::put('blacklist:' . $token, true, $expiresAt);
             }
@@ -133,7 +134,7 @@ class JWTService
     public function getTokenFromRequest(): ?string
     {
         $header = request()->header('Authorization', '');
-        
+
         if (preg_match('/Bearer\s+(.*)$/i', $header, $matches)) {
             return $matches[1];
         }
