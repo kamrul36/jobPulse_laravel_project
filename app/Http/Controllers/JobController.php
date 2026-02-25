@@ -31,6 +31,27 @@ class JobController extends Controller
         );
     }
 
+    public function featuredJobs()
+    {
+        $featuredQuery = Job::where('status', true)->where('isFeatured', true)->with('employer')->where('status', true);
+        $featured = $featuredQuery->paginate((20));
+
+        return ResponseHelper::respond(
+            'v1',
+            'Featured Jobs',
+            'GET',
+            200,
+            $featured->items(),
+            [
+                'current_page' => $featured->currentPage(),
+                'count' => $featured->perPage(),
+                'total_count' => $featured->total(),
+                'has_more_pages' => $featured->hasMorePages(),
+            ]
+
+        );
+    }
+
     public function create(Request $request)
     {
         // $employer_id = $request->user()->id;
@@ -150,12 +171,6 @@ class JobController extends Controller
         return response()->json(['data' => $job->with('employer')->where('id', $id)->get()]);
     }
 
-    public function featuredJobs()
-    {
-        $jobs = Job::where('status', 'active')->where('isFeatured', '1')->with('employer')->where('status', 'active')->limit(10)->get();
-        return response()->json(['data' => $jobs]);
-    }
-
     public function queryJobs(Request $request)
     {
         $jobcategory_slug = array();
@@ -191,7 +206,7 @@ class JobController extends Controller
             $job_category_id[] = Category::where('slug', $slug)->value('id');
         }
 
-        $jobs = Job::where(function ($q) use ($job_category_id) {
+        $jobsSearch = Job::where(function ($q) use ($job_category_id) {
             foreach ($job_category_id as $value) {
                 $q->orWhere('category_id', $value);
             }
@@ -211,16 +226,78 @@ class JobController extends Controller
 
             // ->where('skill', 'like', '%' . $search_key . '%')
 
-            ->with('employer')->where('status', 'active');
+            ->with('employer')->where('status', true);
 
         if ($request->isFeatured) {
             //future function later project we will pass here array so prototype for that
             $job_isFeatured = '1';
-            $jobs = $jobs->where('isFeatured', '1');
+            $jobsSearch = $jobsSearch->where('isFeatured', true);
         }
 
-        return response()->json(['data' => $jobs->get()]);
+        $jobs = $jobsSearch->paginate(20);
+        // return response()->json(['data' => $jobs->get()]);
+
+        return ResponseHelper::respond(
+            'v1',
+            'Get search result',
+            'GET',
+            200,
+            $jobs->items(),
+            [
+                'current_page' => $jobs->currentPage(),
+                'count' => $jobs->perPage(),
+                'total_count' => $jobs->total(),
+                'has_more_pages' => $jobs->hasMorePages(),
+            ]
+        );
     }
+
+
+public function searchJobs(Request $request)
+{
+    $request->validate([
+        'search_query' => 'required|string|max:255',
+    ]);
+
+    $search = trim($request->search_query);
+    $perPage = 20;
+
+    $jobsQuery = Job::query()
+        ->with('employer')
+        ->where('status', true)
+        ->where(function ($query) use ($search) {
+
+            // Search in job fields
+            $query->where('title', 'like', "%{$search}%")
+                  ->orWhere('location', 'like', "%{$search}%")
+                  ->orWhere('skills', 'like', "%{$search}%")
+                  ->orWhere('experience', 'like', "%{$search}%");
+
+            // Search by category slug
+            $query->orWhereHas('category', function ($q) use ($search) {
+                $q->where('slug', 'like', "%{$search}%");
+            });
+        });
+
+    $jobs = $jobsQuery
+        ->latest()
+        ->paginate($perPage);
+
+    return ResponseHelper::respond(
+        'v1',
+        'Get search result',
+        'POST',
+        200,
+        $jobs->items(),
+        [
+            'current_page' => $jobs->currentPage(),
+            'per_page' => $jobs->perPage(),
+            'total' => $jobs->total(),
+            'last_page' => $jobs->lastPage(),
+            'has_more_pages' => $jobs->hasMorePages(),
+        ]
+    );
+}
 
 
 

@@ -25,7 +25,7 @@ Route::group(['prefix' => 'v1'], function () {
 
         Route::post('/logout', [AuthController::class, 'logout']);
 
-        Route::post('/refresh', [AuthController::class, 'refresh']);
+        Route::get('/refresh', [AuthController::class, 'refresh']);
 
         // User routes
 
@@ -84,7 +84,7 @@ Route::group(['prefix' => 'v1'], function () {
 
     Route::get('page/{slug}', [PageController::class, 'show']);
 
-    Route::get('query-jobs', [JobController::class, 'queryJobs']);
+    Route::post('search', [JobController::class, 'searchJobs']);
 
 
     Route::middleware(['jwt.auth'])->group(function () {

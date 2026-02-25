@@ -443,11 +443,10 @@ class AuthController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => [
-                    'access_token' => $newToken,
-                    'token_type' => 'bearer',
-                    'expires_in' => $jwtService->getTTL(),
-                ]
+                'method' => 'GET',
+                'operation' => 'Get AT',
+                'expires_in' => $jwtService->getTTL(),
+                'at' => $newToken
             ], 200);
         } catch (\Exception $e) {
             return response()->json([

@@ -18,8 +18,8 @@ class Job extends Model
         return $this->belongsTo(Application::class);
     }
 
-    public function category():HasMany {
-        return $this->hasMany(Category::class);
+    public function category():BelongsTo {
+        return $this->belongsTo(Category::class, 'category_id');
     }
 
     protected $casts = [
