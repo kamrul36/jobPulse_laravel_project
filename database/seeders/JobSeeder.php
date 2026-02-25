@@ -32,7 +32,7 @@ class JobSeeder extends Seeder
         Job::create([
 
             'title' => 'Web develper',
-            'category_id' => '1',
+            'category_id' => '2',
             'description' => 'This is a test description',
             'skills' => 'javascript, laravel',
             'salary' => '40000',

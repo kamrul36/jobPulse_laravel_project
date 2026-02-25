@@ -18,8 +18,7 @@ class CategorySeeder extends Seeder
         	'name' => 'Design & Creative',
         	'icon' => 'flaticon-tour',
         	'slug' => 'design-creative',
-        	'parent_id' => null,
-        	'status' => 1,
+        	'status' => true,
 
         ]);
          Category::create([
@@ -27,8 +26,7 @@ class CategorySeeder extends Seeder
         	'name' => 'Design & Development',
         	'icon' => 'flaticon-cms',
         	'slug' => 'design-development',
-        	'parent_id' => null,
-        	'status' => 1
+        	'status' => true
 
         ]);
         
@@ -37,8 +35,7 @@ class CategorySeeder extends Seeder
         	'name' => 'Sales & Marketing',
         	'icon' => 'flaticon-report',
         	'slug' => 'sales-marketing',
-        	'parent_id' => null,
-        	'status' => 1,
+        	'status' => true,
 
         ]);
             Category::create([
@@ -46,8 +43,7 @@ class CategorySeeder extends Seeder
         	'name' => 'Mobile Application',
         	'icon' => 'flaticon-app',
         	'slug' => 'mobile-application',
-        	'parent_id' => null,
-        	'status' => 1,
+        	'status' => true,
 
         ]);
              Category::create([
@@ -55,8 +51,7 @@ class CategorySeeder extends Seeder
         	'name' => 'Construction',
         	'icon' => 'flaticon-helmet',
         	'slug' => 'construction',
-        	'parent_id' => null,
-        	'status' => 1,
+        	'status' => true,
 
         ]);
               Category::create([
@@ -64,8 +59,7 @@ class CategorySeeder extends Seeder
         	'name' => 'Information Technology',
         	'icon' => 'flaticon-high-tech',
         	'slug' => 'information-technology',
-        	'parent_id' => null,
-        	'status' => 1,
+        	'status' => true,
 
         ]);
            Category::create([
@@ -73,8 +67,7 @@ class CategorySeeder extends Seeder
         	'name' => 'Real Estate',
         	'icon' => 'flaticon-real-estate',
         	'slug' => 'real-estate',
-        	'parent_id' => null,
-        	'status' => 1,
+        	'status' => true,
 
         ]);
 
@@ -83,8 +76,7 @@ class CategorySeeder extends Seeder
         	'name' => 'Content Writer',
         	'icon' => 'flaticon-content',
         	'slug' => 'content-writer',
-        	'parent_id' => null,
-        	'status' => 1,
+        	'status' => true,
 
         ]);
     }

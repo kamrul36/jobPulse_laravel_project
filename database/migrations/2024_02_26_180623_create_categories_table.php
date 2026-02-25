@@ -16,8 +16,6 @@ return new class extends Migration
             $table->string('name');
             $table->string('icon')->nullable();
             $table->text('slug')->nullable();
-            $table->unsignedBigInteger('job_id')->nullable();
-            $table->foreign('job_id')->references('id')->on('jobs');
             $table->boolean('status')->default(0);
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();

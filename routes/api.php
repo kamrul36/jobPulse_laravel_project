@@ -101,7 +101,7 @@ Route::group(['prefix' => 'v1'], function () {
 
             Route::post('cancel-application', [AdminController::class, 'cancelApplication']);
 
-            Route::post('create-job', [AdminController::class, 'createJob']);
+            // Route::post('create-job', [AdminController::class, 'createJob']);
 
             Route::post('update-job', [AdminController::class, 'updateJob']);
 

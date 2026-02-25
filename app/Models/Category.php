@@ -11,12 +11,12 @@ class Category extends Model
     use HasFactory;
 
     public function jobs(): HasMany
-{
-    return $this->hasMany(Job::class, 'category_id');
-}
+    {
+        return $this->hasMany(Job::class, 'category_id');
+    }
 
 
-        protected $casts = [
+    protected $casts = [
         'status' => 'boolean'
     ];
 }
