@@ -160,40 +160,46 @@ Route::group(['prefix' => 'v1'], function () {
 
     });
 
-    Route::group(['prefix' => 'employer'], function () {
+    Route::middleware(['jwt.auth', 'job.permission'])->group(function () {
 
-        //unauthenticated routes for employer here
+        Route::group(['prefix' => 'employer'], function () {
 
-        Route::post('info', [EmployerController::class, 'info']);
+            //unauthenticated routes for employer here
 
-        Route::post('updateinfo', [EmployerController::class, 'updateinfo']);
+            Route::post('info', [EmployerController::class, 'info']);
 
-        Route::get('jobs', [EmployerController::class, 'getMyJobs']);
+            Route::post('updateinfo', [EmployerController::class, 'updateinfo']);
 
-        Route::post('create-job', [JobController::class, 'create']);
+            Route::get('jobs', [EmployerController::class, 'getMyJobs']);
 
-        Route::post('update-job/{id}', [JobController::class, 'update']);
+            Route::post('create-job', [JobController::class, 'create']);
 
-        Route::post('close-job', [JobController::class, 'closeJob']);
+            Route::post('update-job/{id}', [JobController::class, 'update']);
 
-        Route::get('dash-info', [EmployerController::class, 'dashInfo']);
+            Route::post('unpublish-job/{id}', [JobController::class, 'closeJob']);
 
-        Route::post('update-profile-image', [EmployerController::class, 'updateProfileImage']);
+            Route::post('publish-job/{id}', [JobController::class, 'publishJob']);
 
-        Route::get('messages', [EmployerController::class, 'allMessages']);
+            Route::post('delete-job', [JobController::class, 'destroyJob']);
 
-        Route::post('active-job', [JobController::class, 'activeJob']);
+            Route::get('dash-info', [EmployerController::class, 'dashInfo']);
 
-        Route::post('delete-job', [JobController::class, 'destroyJob']);
+            Route::post('update-profile-image', [EmployerController::class, 'updateProfileImage']);
 
-        Route::get('jobs-applications', [EmployerController::class, 'jobsApplications']);
+            Route::get('messages', [EmployerController::class, 'allMessages']);
 
-        Route::post('accept-application', [ApplicationController::class, 'acceptApplication']);
 
-        Route::post('reject-application', [ApplicationController::class, 'rejectApplication']);
 
-        Route::post('interview-call', [ApplicationController::class, 'interviewCall']);
+            Route::get('jobs-applications', [EmployerController::class, 'jobsApplications']);
 
+            Route::post('accept-application', [ApplicationController::class, 'acceptApplication']);
+
+            Route::post('reject-application', [ApplicationController::class, 'rejectApplication']);
+
+            Route::post('interview-call', [ApplicationController::class, 'interviewCall']);
+
+        });
     });
+
 
 });

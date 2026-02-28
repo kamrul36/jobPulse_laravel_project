@@ -32,7 +32,7 @@ return new class extends Migration {
 
             $table->string('otp')->nullable();
             $table->timestamp('otp_expires_at')->nullable();
-            $table->boolean('is_active')->default(true);
+            $table->boolean('is_active')->default(false);
             $table->softDeletes();
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();

@@ -13,7 +13,13 @@ class EmployerController extends Controller
 
     public function employers()
     {
-        $employers = Employer::paginate(20);
+        $employers = Employer::join('users', 'employer_profiles.user_id', '=', 'users.id')
+            ->join('roles', 'users.role_id', '=', 'roles.id')
+            ->where('roles.slug', 'employer')
+            ->select('employer_profiles.*') // Select only employer columns
+            ->with('user:id,name,email,username') // Eager load specific user fields
+            ->paginate(20);
+
         return ResponseHelper::respond(
             'v1',
             'Get Employers',
@@ -25,10 +31,28 @@ class EmployerController extends Controller
                 'count' => $employers->perPage(),
                 'total_count' => $employers->total(),
                 'has_more_pages' => $employers->hasMorePages(),
-                // 'previous_page' => $employers->lastPage(),
             ]
         );
     }
+
+    // public function employers()
+    // {
+    //     $employers = Employer::paginate(20);
+    //     return ResponseHelper::respond(
+    //         'v1',
+    //         'Get Employers',
+    //         'GET',
+    //         200,
+    //         $employers->items(),
+    //         [
+    //             'current_page' => $employers->currentPage(),
+    //             'count' => $employers->perPage(),
+    //             'total_count' => $employers->total(),
+    //             'has_more_pages' => $employers->hasMorePages(),
+    //             // 'previous_page' => $employers->lastPage(),
+    //         ]
+    //     );
+    // }
 
     public function employerPublicProfile($emp_id, $count_views = "no")
     {

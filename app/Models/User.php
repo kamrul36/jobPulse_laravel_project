@@ -74,6 +74,10 @@ class User extends Authenticatable
     // Helper methods
     public function hasRole($role)
     {
+        if (is_array($role)) {
+            return in_array($this->role->slug, $role);
+        }
+
         return $this->role->slug === $role;
     }
 

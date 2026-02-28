@@ -112,18 +112,6 @@ class RoleController extends Controller
                 'PUT',
                 200
             );
-            // return response()->json([
-            //     'success' => true,
-            //     'message' => 'User role updated successfully',
-            //     'data' => [
-            //         'user' => [
-            //             'id' => $user->id,
-            //             'username' => $user->username,
-            //             'email' => $user->email,
-            //             'role' => $role->name,
-            //         ]
-            //     ]
-            // ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -216,10 +204,10 @@ class RoleController extends Controller
                     'username' => $user->username,
                     'email' => $user->email,
                     'phone' => $user->phone,
-                    'role' => $user->role->name,
+                    'user_role' => $user->role->name,
                     'is_active' => $user->is_active,
-                    'email_verified' => $user->isEmailVerified(),
-                    'phone_verified' => $user->isPhoneVerified(),
+                    'is_email_verified' => $user->isEmailVerified(),
+                    'is_phone_verified' => $user->isPhoneVerified(),
                 ];
             });
 

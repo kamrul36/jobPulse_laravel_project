@@ -80,8 +80,7 @@ class AuthController extends Controller
                 'message' => 'User registered successfully. Please verify your email.',
                 'data' => [
                     'id' => $user->id,
-                    'username' => $user->username,
-                    'role' => $roleSlug
+                    // 'username' => $user->username
                 ]
             ], 200);
 
