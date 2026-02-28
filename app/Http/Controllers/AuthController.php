@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Helper\JWTHelper;
+use App\Models\Employer;
+use App\Models\Jobseeker;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\JWTService;
@@ -57,6 +59,12 @@ class AuthController extends Controller
                 'role_id' => $role->id,
                 'is_active' => true,
             ]);
+
+            if ($request->candidate) {
+                Jobseeker::create(['user_id' => $user->id]);
+            } else {
+                Employer::create(['user_id' => $user->id]);
+            }
 
             $otp = JWTHelper::generateOTP();
 

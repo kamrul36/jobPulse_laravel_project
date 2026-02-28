@@ -168,11 +168,11 @@ Route::group(['prefix' => 'v1'], function () {
 
         Route::post('updateinfo', [EmployerController::class, 'updateinfo']);
 
-        Route::get('jobs', [EmployerController::class, 'jobs']);
+        Route::get('jobs', [EmployerController::class, 'getMyJobs']);
 
         Route::post('create-job', [JobController::class, 'create']);
 
-        Route::post('update-job', [JobController::class, 'update']);
+        Route::post('update-job/{id}', [JobController::class, 'update']);
 
         Route::post('close-job', [JobController::class, 'closeJob']);
 

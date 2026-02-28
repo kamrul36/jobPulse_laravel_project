@@ -10,15 +10,26 @@ class Employer extends Model
 {
     use HasFactory;
 
-    public function jobs(): HasMany
+     protected $table = 'employer_profiles';
+
+    protected $fillable = [
+        'user_id',
+        'company_name',
+        'slogan',
+        'description',
+        'company_type',
+        'technologies_using',
+        'is_Verified'
+    ];
+
+
+
+    public function user()
     {
-        return $this->hasMany(Job::class);
+        return $this->belongsTo(User::class);
     }
 
     protected $casts = [
-        'status' => 'boolean',
-        'isFeatued' => 'boolean',
-        'active' => 'boolean',
-        'email_verified_at' => 'datetime',
+        'is_Verified' => 'boolean',
     ];
 }

@@ -20,13 +20,22 @@ return new class extends Migration {
             $table->timestamp('phone_verified_at')->nullable();
             $table->string('password');
             $table->foreignId('role_id')->constrained('roles')->onDelete('cascade');
+
+            // Common profile fields
+            $table->text('profile_image')->nullable();
+            $table->text('address')->nullable();
+            $table->text('website')->nullable();
+            $table->string('facebook')->nullable();
+            $table->string('twitter')->nullable();
+            $table->string('youtube')->nullable();
+            $table->string('github')->nullable();
+
             $table->string('otp')->nullable();
             $table->timestamp('otp_expires_at')->nullable();
             $table->boolean('is_active')->default(true);
             $table->softDeletes();
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
-
         });
     }
 

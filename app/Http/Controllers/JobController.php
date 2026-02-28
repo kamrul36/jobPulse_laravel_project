@@ -14,7 +14,7 @@ class JobController extends Controller
 {
     public function jobs()
     {
-        $jobsQuery = Job::where('status', true)->with('employer');
+        $jobsQuery = Job::where('status', true)->with(relations: 'category');
 
         $jobs = $jobsQuery->paginate(20);
         return ResponseHelper::respond(
@@ -53,7 +53,6 @@ class JobController extends Controller
 
         );
     }
-
 
     /**
      * Create a new job (Employer only)
@@ -145,49 +144,152 @@ class JobController extends Controller
         }
     }
 
-
-
-
-    public function update(Request $request)
+    /**
+     * Update an existing job (Employer only - can only update their own jobs)
+     */
+    public function update(Request $request, $id)
     {
-        $employer_id = $request->user()->id;
+        try {
+            // Get authenticated user from JWT token
+            $jwtService = new JWTService();
+            $token = $jwtService->getTokenFromRequest();
 
-        $validated = $request->validate([
-            'title' => 'required',
-            'category_id' => 'required',
-            'description' => 'required',
-            'skills' => 'required',
-            'salary' => 'required',
-            'deadline' => 'required',
-            'open_position' => 'required',
-            'location' => 'required',
-            'type' => 'required',
-            'job_id' => 'required',
-            'experience' => 'required',
-        ]);
-        $employer_id = $request->user()->id;
+            if (!$token) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Token not provided'
+                ], 401);
+            }
 
-        $job = Job::where('id', $request->job_id)->where('employer_id', $employer_id)->first();
+            $user = $jwtService->getUserFromToken($token);
 
-        $job->title = $request->title;
-        $job->category_id = $request->category_id;
-        $job->description = $request->description;
-        $job->skills = $request->skills;
-        $job->salary = $request->salary;
-        $job->deadline = $request->deadline;
-        $job->open_position = $request->open_position;
-        $job->location = $request->location;
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized'
+                ], 401);
+            }
 
-        $job->employer_id = $employer_id;
-        $job->experience = $request->experience;
-        $job->type = $request->type;
+            // Check if user has employer role
+            if (!$user->hasRole('employer')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Only employers can update jobs'
+                ], 403);
+            }
 
-        if ($job->save()) {
+            // Find the job
+            $job = Job::find($id);
 
-            return response()->json(['data' => $job, 'message' => 'You have updated job data.']);
-        } else {
-            return response()->json(['message' => 'Failed to update job.'], 500);
+            if (!$job) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Job not found'
+                ], 404);
+            }
 
+            // Check if the job belongs to the authenticated employer
+            if ($job->employer_id !== $user->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'You can only update your own jobs'
+                ], 403);
+            }
+
+            // Validate request
+            $validator = Validator::make($request->all(), [
+                'title' => 'sometimes|required|max:255',
+                'category_id' => 'sometimes|required|exists:categories,id',
+                'description' => 'nullable|string',
+                'skills' => 'sometimes|required|string',
+                'salary' => 'nullable|string',
+                'deadline' => 'nullable|date',
+                'open_position' => 'nullable|string',
+                // 'type' => 'sometimes|required|in:full_time,remote,part_time,project_basis,freelance',
+                // 'location' => 'sometimes|required|string',
+                'type' => 'sometimes|nullable|in:full_time,remote,part_time,project_basis,freelance',
+                'location' => 'sometimes|nullable|string',
+                'experience' => 'nullable|string',
+                'isFeatured' => 'nullable|boolean',
+                'status' => 'nullable|in:0,1'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            // Update job
+            $job->update($validator->validated());
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Job updated successfully.',
+                'data' => $job
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update job',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get all jobs by authenticated employer
+     */
+    public function getMyJobs()
+    {
+        try {
+            // Get authenticated user from JWT token
+            $jwtService = new JWTService();
+            $token = $jwtService->getTokenFromRequest();
+
+            if (!$token) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Token not provided'
+                ], 401);
+            }
+
+            $user = $jwtService->getUserFromToken($token);
+
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized'
+                ], 401);
+            }
+
+            // Check if user has employer role
+            if (!$user->hasRole('employer')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Only employers can view their jobs'
+                ], 403);
+            }
+
+            // Get all jobs for this employer
+            $jobs = Job::where('employer_id', $user->id)
+                ->with('category') // If you have category relationship
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $jobs
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch jobs',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 

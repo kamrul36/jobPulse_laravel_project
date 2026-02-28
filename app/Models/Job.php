@@ -29,10 +29,17 @@ class Job extends Model
         'status'
     ];
 
-    public function employer(): BelongsTo
+
+    // public function employer(): BelongsTo
+    // {
+    //     return $this->belongsTo(Employer::class);
+    // }
+
+    public function employer()
     {
-        return $this->belongsTo(Employer::class);
+        return $this->belongsTo(User::class, 'employer_id');
     }
+
     public function applications(): BelongsTo
     {
         return $this->belongsTo(Application::class);

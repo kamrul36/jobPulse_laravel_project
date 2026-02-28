@@ -21,7 +21,7 @@ class DatabaseSeeder extends Seeder
 
         $this->call(
             [
-                EmployerSeeder::class,
+                // EmployerSeeder::class,
                 SuperAdminSeeder::class
             ]
         );

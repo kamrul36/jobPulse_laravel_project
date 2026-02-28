@@ -24,12 +24,6 @@ class User extends Authenticatable
     public $incrementing = false;
 
     protected $fillable = [
-        // 'firstName',
-        // 'lastName',
-        // 'email',
-        // 'mobile',
-        // 'password',
-
         'username',
         'name',
         'email',
@@ -96,5 +90,30 @@ class User extends Authenticatable
     public function isPhoneVerified()
     {
         return !is_null($this->phone_verified_at);
+    }
+
+    public function jobSeekerProfile()
+    {
+        return $this->hasOne(Jobseeker::class);
+    }
+    public function employerProfile()
+    {
+        return $this->hasOne(Employer::class);
+    }
+
+    public function jobs()
+    {
+        return $this->hasMany(Job::class, 'employer_id');
+    }
+
+    // Add these helper methods
+    public function isCandidate()
+    {
+        return $this->hasRole('candidate');
+    }
+
+    public function isEmployer()
+    {
+        return $this->hasRole('employer');
     }
 }

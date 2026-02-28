@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('jobs', function (Blueprint $table) {
-            $table->id();
+           $table->id();
             $table->text('title');
             $table->text('slug')->nullable();
             $table->text('description')->nullable();
@@ -23,11 +23,11 @@ return new class extends Migration
             $table->integer('views')->default(0);
             $table->text('skills');
             $table->string('experience')->nullable();//disable this in production
-            $table->enum('type',['full_time','remote','part_time','project_basis','freelance']);
+            $table->enum('type', ['full_time', 'remote', 'part_time', 'project_basis', 'freelance']);
+            $table->uuid('employer_id'); // UUID to match users.id
+            $table->foreign('employer_id')->references('id')->on('users')->onDelete('cascade');
             $table->unsignedBigInteger('category_id')->nullable();
-            $table->unsignedBigInteger('employer_id')->nullable();
             $table->foreign('category_id')->references('id')->on('categories');
-            $table->foreign('employer_id')->references('id')->on('employers');
             $table->boolean('isFeatured')->default(0);
             $table->boolean('status')->default(0);
             $table->timestamp('created_at')->useCurrent();

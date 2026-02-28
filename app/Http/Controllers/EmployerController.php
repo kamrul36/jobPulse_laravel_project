@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Helper\ResponseHelper;
 use App\Models\Employer;
 use App\Models\Job;
+use App\Services\JWTService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\URL;
 class EmployerController extends Controller
@@ -57,34 +58,90 @@ class EmployerController extends Controller
         return response()->json(['data' => $employer]);
     }
 
-    public function jobs(Request $request)
+
+
+    /**
+     * Get all jobs by authenticated employer
+     */
+    public function getMyJobs()
     {
-        // $employer_id = $request->user()->id;
-        // $jobs = Job::where('employer_id', $employer_id)->with('employer')->where('status', '!=', 'deleted')->get();
-        // return response()->json(['data' => $jobs]);
-
         try {
-            $employerId = $request->user()->id;
+            // Get authenticated user from JWT token
+            $jwtService = new JWTService();
+            $token = $jwtService->getTokenFromRequest();
 
-            $jobs = Job::where('employer_id', $employerId)
-                ->where('status', '!=', 'deleted')
-                ->with('employer')
+            if (!$token) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Token not provided'
+                ], 401);
+            }
+
+            $user = $jwtService->getUserFromToken($token);
+
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized'
+                ], 401);
+            }
+
+            // Check if user has employer role
+            if (!$user->hasRole('employer')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Only employers can view their jobs'
+                ], 403);
+            }
+
+            // Get all jobs for this employer
+            $jobs = Job::where('employer_id', $user->id)
+                ->with('category') // If you have category relationship
+                ->orderBy('created_at', 'desc')
                 ->get();
 
             return response()->json([
                 'success' => true,
-                'message' => $jobs->isEmpty() ? 'No jobs found' : 'Jobs fetched successfully',
-                'data' => $jobs,
+                'data' => $jobs
             ], 200);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to fetch jobs',
-                'error' => $e->getMessage(),
+                'error' => $e->getMessage()
             ], 500);
         }
     }
+
+    // public function jobs(Request $request)
+    // {
+    //     // $employer_id = $request->user()->id;
+    //     // $jobs = Job::where('employer_id', $employer_id)->with('employer')->where('status', '!=', 'deleted')->get();
+    //     // return response()->json(['data' => $jobs]);
+
+    //     try {
+    //         $employerId = $request->user()->id;
+
+    //         $jobs = Job::where('employer_id', $employerId)
+    //             ->where('status', '!=', 'deleted')
+    //             ->with('employer')
+    //             ->get();
+
+    //         return response()->json([
+    //             'success' => true,
+    //             'message' => $jobs->isEmpty() ? 'No jobs found' : 'Jobs fetched successfully',
+    //             'data' => $jobs,
+    //         ], 200);
+
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Failed to fetch jobs',
+    //             'error' => $e->getMessage(),
+    //         ], 500);
+    //     }
+    // }
 
 
     public function jobsApplications(Request $request)
