@@ -174,13 +174,13 @@ Route::group(['prefix' => 'v1'], function () {
 
             Route::post('create-job', [JobController::class, 'create']);
 
-            Route::post('update-job/{id}', [JobController::class, 'update']);
+            Route::put('update-job/{id}', [JobController::class, 'update']);
 
-            Route::post('unpublish-job/{id}', [JobController::class, 'closeJob']);
+            Route::post('unpublish-job/{id}', [JobController::class, 'unpublishJob']);
 
             Route::post('publish-job/{id}', [JobController::class, 'publishJob']);
 
-            Route::post('delete-job', [JobController::class, 'destroyJob']);
+            Route::post('delete-job', [JobController::class, 'deleteJob']);
 
             Route::get('dash-info', [EmployerController::class, 'dashInfo']);
 

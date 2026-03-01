@@ -87,39 +87,14 @@ class EmployerController extends Controller
     /**
      * Get all jobs by authenticated employer
      */
-    public function getMyJobs()
+    public function getMyJobs(Request $request)
     {
         try {
-            // Get authenticated user from JWT token
-            $jwtService = new JWTService();
-            $token = $jwtService->getTokenFromRequest();
-
-            if (!$token) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Token not provided'
-                ], 401);
-            }
-
-            $user = $jwtService->getUserFromToken($token);
-
-            if (!$user) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Unauthorized'
-                ], 401);
-            }
-
-            // Check if user has employer role
-            if (!$user->hasRole('employer')) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Only employers can view their jobs'
-                ], 403);
-            }
+            // Get authenticated user from CheckJobPermission middleware
+            $userId = $request->auth_user_id;
 
             // Get all jobs for this employer
-            $jobs = Job::where('employer_id', $user->id)
+            $jobs = Job::where('employer_id', $userId)
                 ->with('category') // If you have category relationship
                 ->orderBy('created_at', 'desc')
                 ->get();

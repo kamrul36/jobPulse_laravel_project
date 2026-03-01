@@ -60,9 +60,8 @@ class JobController extends Controller
     public function create(Request $request)
     {
         try {
-
-            // Get authenticated user from JWT token
-            $user = $request->auth_user;
+            // Get authenticated user data from CheckJobPermission middleware
+            $userId = $request->auth_user_id;
 
             // Validate request
             $validator = Validator::make($request->all(), [
@@ -88,7 +87,7 @@ class JobController extends Controller
 
             $validated = $validator->validated();
 
-            // Create job with authenticated employer's ID
+            // Create job with authenticated user's ID as employer
             $job = Job::create([
                 'title' => $validated['title'],
                 'description' => $validated['description'] ?? null,
@@ -100,14 +99,14 @@ class JobController extends Controller
                 'experience' => $validated['experience'] ?? null,
                 'type' => $validated['type'],
                 'category_id' => $validated['category_id'],
-                'employer_id' => $user->id, // Use authenticated user's ID
-                'is_Featured' => $validated['isFeatured'] ?? false,
-                'status' => 0, // inactive by default
+                'employer_id' => $userId, // From JWT token
+                'isFeatured' => $validated['isFeatured'] ?? false,
+                'status' => 0, // Inactive by default (needs to be published)
             ]);
 
             return response()->json([
                 'success' => true,
-                'message' => 'You have added a new job successfully.',
+                'message' => 'Job created successfully. Please publish it to make it visible.',
                 'data' => $job
             ], 201);
 
@@ -128,7 +127,7 @@ class JobController extends Controller
         try {
 
             // Get authenticated user from CheckJobPermission middleware
-            $user = $request->auth_user;
+            $userId = $request->auth_user_id;
 
             // Find the job
             $job = Job::find($id);
@@ -141,7 +140,7 @@ class JobController extends Controller
             }
 
             // Check if the job belongs to the authenticated employer
-            if ($job->employer_id !== $user->id) {
+            if ($job->employer_id !== $userId) {
                 return response()->json([
                     'success' => false,
                     'message' => 'You can only update your own jobs'
@@ -198,10 +197,11 @@ class JobController extends Controller
     {
         try {
             // Get authenticated user from CheckJobPermission middleware
-            $user = $request->auth_user;
+            $userId = $request->auth_user_id;
+            $userRole = $request->auth_user_role;
 
             $job = Job::where('id', $id)
-                ->where('employer_id', $user->id)
+                ->when($userRole === 'employer', fn($q) => $q->where('employer_id', $userId))
                 ->first();
 
             if (!$job) {
@@ -211,15 +211,15 @@ class JobController extends Controller
                 ], 404);
             }
 
-            // Publish the job (set status to 1 )
-            $job->status = 1; // or 'active' if using string status
-            $job->save();
+            $job->update(['status' => 1]);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Job published successfully',
-                'data' => $job
-            ], 200);
+            return ResponseHelper::respond(
+                'v1',
+                'Job published successfully',
+                'POST',
+                200,
+                new JobResource($job),
+            );
 
         } catch (\Exception $e) {
             return response()->json([
@@ -231,51 +231,73 @@ class JobController extends Controller
     }
 
 
-      public function destroyJob(Request $request)
+    public function deleteJob(Request $request, $id)
     {
-        $employer_id = $request->user()->id;
-        $job = Job::where('id', $request->job_id)->where('employer_id', $employer_id)->first();
+        try {
+            // Get authenticated user from CheckJobPermission middleware
+            $userId = $request->auth_user_id;
+            $userRole = $request->auth_user_role;
 
-        $job->status = 'deleted';
-        if ($job->save()) {
+            $job = Job::where('id', $id)
+                ->when($userRole === 'employer', fn($q) => $q->where('employer_id', $userId))
+                ->first();
 
-            return response()->json(['data' => $job, 'message' => 'You have deleted job.']);
-        } else {
-            return response()->json(['message' => 'Failed to delete job.'], 500);
+            if (!$job) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Job not found or unauthorized'
+                ], 404);
+            }
 
+            $job->delete(); // Soft delete
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Job moved to trash successfully'
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete job',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 
 
-    public function closeJob(Request $request)
+    public function unpublishJob(Request $request, $id)
     {
-        $employer_id = $request->user()->id;
-        $job = Job::where('id', $request->job_id)->where('employer_id', $employer_id)->first();
+        try {
+            // Get authenticated user from CheckJobPermission middleware
+            $userId = $request->auth_user_id;
+            $userRole = $request->auth_user_role;
 
-        $job->status = 'closed';
-        if ($job->save()) {
+            $job = Job::where('id', $id)
+                ->when($userRole === 'employer', fn($q) => $q->where('employer_id', $userId))
+                ->first();
 
-            return response()->json(['data' => $job, 'message' => 'You have updated job.']);
-        } else {
-            return response()->json(['message' => 'Failed to delete job.'], 500);
+            if (!$job) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Job not found or unauthorized'
+                ], 404);
+            }
 
-        }
+            $job->update(['status' => 0]);
 
-    }
+            return response()->json([
+                'success' => true,
+                'message' => 'Job unpublished successfully',
+                'data' => $job
+            ], 200);
 
-
-    public function activeJob(Request $request)
-    {
-        $employer_id = $request->user()->id;
-        $job = Job::where('id', $request->job_id)->where('employer_id', $employer_id)->first();
-
-        $job->status = true;
-        if ($job->save()) {
-
-            return response()->json(['data' => $job, 'message' => 'You have updated job.']);
-        } else {
-            return response()->json(['message' => 'Failed to delete job.'], 500);
-
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to unpublish job',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 

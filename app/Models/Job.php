@@ -64,6 +64,7 @@ class Job extends Model
     protected $casts = [
         'status' => 'boolean',
         'isFeatured' => 'boolean',
+        'deadline' => 'datetime',
     ];
 
 }
