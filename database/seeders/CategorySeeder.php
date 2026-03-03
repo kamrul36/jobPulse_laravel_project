@@ -3,81 +3,78 @@
 namespace Database\Seeders;
 
 use App\Models\Category;
+use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class CategorySeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
-    public function run(): void
-    {
-        Category::create([
+	/**
+	 * Run the database seeds.
+	 */
+	public function run(): void
+	{
 
-        	'name' => 'Design & Creative',
-        	'icon' => 'flaticon-tour',
-        	'slug' => 'design-creative',
-        	'status' => true,
+		$superAdmin = User::whereHas('role', function ($query) {
+			$query->where('slug', 'super_admin');
+		})->first();
 
-        ]);
-         Category::create([
 
-        	'name' => 'Design & Development',
-        	'icon' => 'flaticon-cms',
-        	'slug' => 'design-development',
-        	'status' => true
+		$categories = [
+			'Technology & IT',
+			'Software Development',
+			'Web Development',
+			'Mobile Development',
+			'Data Science & Analytics',
+			'DevOps & Cloud',
+			'Cybersecurity',
+			'UI/UX Design',
+			'Graphic Design',
+			'Digital Marketing',
+			'Content Writing',
+			'SEO & SEM',
+			'Sales & Business Development',
+			'Customer Support',
+			'Human Resources',
+			'Finance & Accounting',
+			'Legal & Compliance',
+			'Project Management',
+			'Product Management',
+			'Operations & Logistics',
+			'Healthcare & Medical',
+			'Education & Training',
+			'Engineering',
+			'Architecture & Construction',
+			'Hospitality & Tourism',
+			'Food & Beverage',
+			'Real Estate',
+			'Retail & E-commerce',
+			'Manufacturing',
+			'Media & Entertainment',
+			'Photography & Videography',
+			'Administrative & Office',
+			'Virtual Assistant',
+			'Translation & Languages',
+			'Research & Development',
+			'Quality Assurance',
+			'Consulting',
+			'Freelance & Gig Work',
+			'Internships & Entry Level',
+			'Other',
+		];
 
-        ]);
-        
-           Category::create([
-
-        	'name' => 'Sales & Marketing',
-        	'icon' => 'flaticon-report',
-        	'slug' => 'sales-marketing',
-        	'status' => true,
-
-        ]);
-            Category::create([
-
-        	'name' => 'Mobile Application',
-        	'icon' => 'flaticon-app',
-        	'slug' => 'mobile-application',
-        	'status' => true,
-
-        ]);
-             Category::create([
-
-        	'name' => 'Construction',
-        	'icon' => 'flaticon-helmet',
-        	'slug' => 'construction',
-        	'status' => true,
-
-        ]);
-              Category::create([
-
-        	'name' => 'Information Technology',
-        	'icon' => 'flaticon-high-tech',
-        	'slug' => 'information-technology',
-        	'status' => true,
-
-        ]);
-           Category::create([
-
-        	'name' => 'Real Estate',
-        	'icon' => 'flaticon-real-estate',
-        	'slug' => 'real-estate',
-        	'status' => true,
-
-        ]);
-
-        Category::create([
-
-        	'name' => 'Content Writer',
-        	'icon' => 'flaticon-content',
-        	'slug' => 'content-writer',
-        	'status' => true,
-
-        ]);
-    }
+		foreach ($categories as $name) {
+			DB::table('categories')->insert([
+				'name' => $name,
+				'slug' => Str::slug($name),
+				'status' => 1,
+				'created_by' => $superAdmin->id,
+				'created_at' => now(),
+				'updated_at' => now(),
+			]);
+		}
+		$this->command->info('✅ ' . count($categories) . ' categories seeded!');
+	}
 }

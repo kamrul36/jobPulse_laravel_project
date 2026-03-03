@@ -19,6 +19,46 @@ use Illuminate\Support\Facades\Route;
 Route::group(['prefix' => 'v1'], function () {
 
 
+    // Public routes (no authentication required)
+
+    Route::get('/', [HomeController::class, 'index']);
+
+    Route::get('jobs', [JobController::class, 'jobs']);
+
+    Route::get('employers', [EmployerController::class, 'employers']);
+
+    Route::get('categories', [CategoryController::class, 'index']);
+
+    Route::get('job/{id}/{count_views?}', [JobController::class, 'show']);
+
+    Route::get('featured-jobs', [JobController::class, 'featuredJobs']);
+
+    // Route::get('recent-jobs', [JobController::class, 'recentJobs']);
+
+    Route::get('jobseekers', [JobseekerController::class, 'jobseekers']);
+
+    Route::get('page/{slug}', [PageController::class, 'show']);
+
+    Route::post('search', [JobController::class, 'searchJobs']);
+
+
+    // Public routes (no authentication required)
+
+    Route::post('/login', [AuthController::class, 'login']);
+
+    Route::post('/register', [AuthController::class, 'register']);
+
+    Route::post('/request-otp', [AuthController::class, 'requestOTP']);
+
+    Route::post('/verify-email', [AuthController::class, 'verifyEmail']);
+
+    Route::post('/verify-phone', [AuthController::class, 'verifyPhone']);
+
+    Route::post('/reset-password', [AuthController::class, 'resetPassword']);
+
+    Route::post('/reactivate', [UserController::class, 'reactivate']);
+
+
     // Protected routes (require JWT token)
     Route::middleware(['jwt.auth'])->group(function () {
         // Auth routes
@@ -47,55 +87,13 @@ Route::group(['prefix' => 'v1'], function () {
 
     });
 
-    Route::post('/login', [AuthController::class, 'login']);
-
-    Route::post('/register', [AuthController::class, 'register']);
-
-    Route::post('/request-otp', [AuthController::class, 'requestOTP']);
-
-    Route::post('/verify-email', [AuthController::class, 'verifyEmail']);
-
-    Route::post('/verify-phone', [AuthController::class, 'verifyPhone']);
-
-    Route::post('/reset-password', [AuthController::class, 'resetPassword']);
-
-    Route::post('/reactivate', [UserController::class, 'reactivate']);
-
-
-
-    Route::get('/', [HomeController::class, 'index']);
-
-    Route::get('candidate-jobs', [JobController::class, 'jobs']);
-
-    Route::get('employers', [EmployerController::class, 'employers']);
-
-    Route::get('categories', [CategoryController::class, 'index']);
-
-    Route::get('job/{id}/{count_views?}', [JobController::class, 'show']);
-
-    Route::get('featured-jobs', [JobController::class, 'featuredJobs']);
-
-    // Route::get('recent-jobs', [JobController::class, 'recentJobs']);
-
-
-    Route::get('jobseekers', [JobseekerController::class, 'jobseekers']);
-
-
-
-    Route::get('page/{slug}', [PageController::class, 'show']);
-
-    Route::post('search', [JobController::class, 'searchJobs']);
-
 
     Route::middleware(['jwt.auth'])->group(function () {
-
 
         Route::group(['prefix' => 'admin'], function () {
 
             //only authenticated admin only
             //admin routes
-
-
 
             Route::get('dash-info', [AdminController::class, 'dashInfo']);
 
@@ -192,8 +190,6 @@ Route::group(['prefix' => 'v1'], function () {
             Route::post('update-profile-image', [EmployerController::class, 'updateProfileImage']);
 
             Route::get('messages', [EmployerController::class, 'allMessages']);
-
-
 
             Route::get('jobs-applications', [EmployerController::class, 'jobsApplications']);
 

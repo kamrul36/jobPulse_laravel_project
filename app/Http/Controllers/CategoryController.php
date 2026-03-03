@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Helper\ResponseHelper;
+use App\Http\Resources\CategoryResource;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -11,28 +12,29 @@ class CategoryController extends Controller
 {
     public function index()
     {
-        $category = Category::paginate(20);
+
+        $category = Category::with(['createdBy', 'updatedBy', 'deletedBy'])
+            ->paginate(20);
+
         return ResponseHelper::respond(
             'v1',
-            'Get Jobs',
+            'Get Categories',
             'GET',
             200,
-            $category->items(),
+            CategoryResource::collection($category),
             [
                 'current_page' => $category->currentPage(),
                 'count' => $category->perPage(),
                 'total_count' => $category->total(),
                 'has_more_pages' => $category->hasMorePages(),
-                // 'previous_page' => $category->lastPage(),
             ]
         );
     }
 
-      public function create(Request $request)
+    public function create(Request $request)
     {
         try {
 
-            // dd($request->all());
             // Get authenticated user data from CheckJobPermission middleware
             $userId = $request->auth_user_id;
 
@@ -56,7 +58,7 @@ class CategoryController extends Controller
                 'name' => $validated['name'],
                 'icon' => $validated['description'] ?? null,
                 'status' => 1,
-                'created_by'=> $userId
+                'created_by' => $userId
             ]);
 
             return response()->json([
