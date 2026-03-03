@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Helper\ResponseHelper;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class CategoryController extends Controller
 {
@@ -25,5 +26,51 @@ class CategoryController extends Controller
                 // 'previous_page' => $category->lastPage(),
             ]
         );
+    }
+
+      public function create(Request $request)
+    {
+        try {
+
+            // dd($request->all());
+            // Get authenticated user data from CheckJobPermission middleware
+            $userId = $request->auth_user_id;
+
+            // Validate request
+            $validator = Validator::make($request->all(), [
+                'name' => 'required|max:255',
+                'icon' => 'nullable|string'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            $validated = $validator->validated();
+
+            // Create job with authenticated user's ID as employer
+            $job = Category::create([
+                'name' => $validated['name'],
+                'icon' => $validated['description'] ?? null,
+                'status' => 1,
+                'created_by'=> $userId
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'A category created successfully.',
+                'data' => $job
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to create Category',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }

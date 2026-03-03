@@ -26,20 +26,33 @@ class Job extends Model
         'experience',
         'type',
         'category_id',
-        'employer_id',
         'isFeatured',
-        'status'
+        'status',
+        'created_by',
+        'updated_by',
+        'deleted_by',
     ];
 
 
-    // public function employer(): BelongsTo
-    // {
-    //     return $this->belongsTo(Employer::class);
-    // }
+        // Relationships
+    public function createdBy()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function updatedBy()
+    {
+        return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    public function deletedBy()
+    {
+        return $this->belongsTo(User::class, 'deleted_by');
+    }
 
     public function employer()
     {
-        return $this->belongsTo(User::class, 'employer_id');
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     public function applications(): BelongsTo

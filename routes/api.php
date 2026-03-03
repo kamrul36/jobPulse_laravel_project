@@ -65,7 +65,7 @@ Route::group(['prefix' => 'v1'], function () {
 
     Route::get('/', [HomeController::class, 'index']);
 
-    Route::get('jobs', [JobController::class, 'jobs']);
+    Route::get('candidate-jobs', [JobController::class, 'jobs']);
 
     Route::get('employers', [EmployerController::class, 'employers']);
 
@@ -94,6 +94,8 @@ Route::group(['prefix' => 'v1'], function () {
 
             //only authenticated admin only
             //admin routes
+
+
 
             Route::get('dash-info', [AdminController::class, 'dashInfo']);
 
@@ -165,6 +167,9 @@ Route::group(['prefix' => 'v1'], function () {
         Route::group(['prefix' => 'employer'], function () {
 
             //unauthenticated routes for employer here
+
+            Route::post('create-category', [CategoryController::class, 'create']);
+
 
             Route::post('info', [EmployerController::class, 'info']);
 

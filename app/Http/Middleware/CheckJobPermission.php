@@ -44,7 +44,7 @@ class CheckJobPermission
                 return response()->json(['success' => false, 'message' => 'Token invalidated'], 401);
             }
 
-            if (!in_array($userRole, ['admin', 'employer'])) {
+            if (!in_array($userRole, ['admin', 'employer', 'super_admin'])) {
                 return response()->json(['success' => false, 'message' => 'Unauthorized role'], 403);
             }
 

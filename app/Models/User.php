@@ -65,6 +65,57 @@ class User extends Authenticatable
         'is_active' => 'boolean'
     ];
 
+    public function jobSeekerProfile()
+    {
+        return $this->hasOne(Jobseeker::class);
+    }
+    public function employerProfile()
+    {
+        return $this->hasOne(Employer::class);
+    }
+
+    public function jobs()
+    {
+        return $this->hasMany(Job::class, 'created_by');
+    }
+
+    // Jobs this user created
+    public function createdJobs()
+    {
+        return $this->hasMany(Job::class, 'created_by');
+    }
+
+    // Jobs this user updated
+    public function updatedJobs()
+    {
+        return $this->hasMany(Job::class, 'updated_by');
+    }
+
+    // Jobs this user deleted
+    public function deletedJobs()
+    {
+        return $this->hasMany(Job::class, 'deleted_by');
+    }
+
+    // Categories created by this user
+    public function createdCategories()
+    {
+        return $this->hasMany(Category::class, 'created_by');
+    }
+
+    // Categories updated by this user
+    public function updatedCategories()
+    {
+        return $this->hasMany(Category::class, 'updated_by');
+    }
+
+    // Categories deleted by this user
+    public function deletedCategories()
+    {
+        return $this->hasMany(Category::class, 'deleted_by');
+    }
+
+
     // Relationships
     public function role()
     {
@@ -94,20 +145,6 @@ class User extends Authenticatable
     public function isPhoneVerified()
     {
         return !is_null($this->phone_verified_at);
-    }
-
-    public function jobSeekerProfile()
-    {
-        return $this->hasOne(Jobseeker::class);
-    }
-    public function employerProfile()
-    {
-        return $this->hasOne(Employer::class);
-    }
-
-    public function jobs()
-    {
-        return $this->hasMany(Job::class, 'employer_id');
     }
 
     // Add these helper methods

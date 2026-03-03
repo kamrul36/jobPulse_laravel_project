@@ -99,7 +99,7 @@ class JobController extends Controller
                 'experience' => $validated['experience'] ?? null,
                 'type' => $validated['type'],
                 'category_id' => $validated['category_id'],
-                'employer_id' => $userId, // From JWT token
+                'created_by' => $userId, // From JWT token
                 'isFeatured' => $validated['isFeatured'] ?? false,
                 'status' => 0, // Inactive by default (needs to be published)
             ]);
@@ -125,12 +125,16 @@ class JobController extends Controller
     public function update(Request $request, $id)
     {
         try {
-
             // Get authenticated user from CheckJobPermission middleware
             $userId = $request->auth_user_id;
+            $userRole = $request->auth_user_role;
 
-            // Find the job
-            $job = Job::find($id);
+            // Find job with role-based filter
+            $job = Job::where('id', $id)
+                ->when($userRole === 'employer', function ($query) use ($userId) {
+                    return $query->where('created_by', $userId); // ✅ Changed from employer_id
+                })
+                ->first();
 
             if (!$job) {
                 return response()->json([
@@ -172,8 +176,11 @@ class JobController extends Controller
                 ], 422);
             }
 
+            $validated = $validator->validated();
+            $validated['updated_by'] = $userId;
+
             // Update job
-            $job->update($validator->validated());
+            $job->update($validated);
 
             return response()->json([
                 'success' => true,
@@ -196,6 +203,9 @@ class JobController extends Controller
     public function publishJob(Request $request, $id)
     {
         try {
+
+            // dd($request->all());
+
             // Get authenticated user from CheckJobPermission middleware
             $userId = $request->auth_user_id;
             $userRole = $request->auth_user_role;

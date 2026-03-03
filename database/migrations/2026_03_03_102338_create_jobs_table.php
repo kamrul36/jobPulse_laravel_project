@@ -23,8 +23,12 @@ return new class extends Migration {
             $table->text('skills');
             $table->string('experience')->nullable();//disable this in production
             $table->enum('type', ['full_time', 'remote', 'part_time', 'project_basis', 'freelance']);
-            $table->uuid('employer_id'); // UUID to match users.id
-            $table->foreign('employer_id')->references('id')->on('users')->onDelete('cascade');
+            $table->uuid('created_by')->nullable();
+            $table->uuid('updated_by')->nullable();
+            $table->uuid('deleted_by')->nullable();
+            $table->foreign('created_by')->references('id')->on('users')->nullOnDelete();
+            $table->foreign('updated_by')->references('id')->on('users')->nullOnDelete();
+            $table->foreign('deleted_by')->references('id')->on('users')->nullOnDelete();
             $table->unsignedBigInteger('category_id')->nullable();
             $table->foreign('category_id')->references('id')->on('categories');
             $table->boolean('isFeatured')->default(0);
