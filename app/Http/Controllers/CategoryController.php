@@ -15,7 +15,6 @@ class CategoryController extends Controller
 
         $category = Category::with(['createdBy', 'updatedBy', 'deletedBy'])
             ->paginate(20);
-
         return ResponseHelper::respond(
             'v1',
             'Get Categories',
@@ -40,7 +39,7 @@ class CategoryController extends Controller
 
             // Validate request
             $validator = Validator::make($request->all(), [
-                'name' => 'required|max:255',
+                'name' => 'required|max:50',
                 'icon' => 'nullable|string'
             ]);
 
@@ -54,17 +53,16 @@ class CategoryController extends Controller
             $validated = $validator->validated();
 
             // Create job with authenticated user's ID as employer
-            $job = Category::create([
+            $category = Category::create([
                 'name' => $validated['name'],
-                'icon' => $validated['description'] ?? null,
+                'icon' => $validated['icon'] ?? null,
                 'status' => 1,
                 'created_by' => $userId
             ]);
 
             return response()->json([
                 'success' => true,
-                'message' => 'A category created successfully.',
-                'data' => $job
+                'message' => 'A category created successfully.'
             ], 200);
 
         } catch (\Exception $e) {

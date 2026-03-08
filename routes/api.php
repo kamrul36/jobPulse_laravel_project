@@ -42,7 +42,7 @@ Route::group(['prefix' => 'v1'], function () {
     Route::post('search', [JobController::class, 'searchJobs']);
 
 
-    // Public routes (no authentication required)
+    // Public routes (no authentication required)   
 
     Route::post('/login', [AuthController::class, 'login']);
 

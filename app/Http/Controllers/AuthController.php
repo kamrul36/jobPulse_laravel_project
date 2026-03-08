@@ -2,87 +2,57 @@
 
 namespace App\Http\Controllers;
 
+use App\DTOs\Auth\RegisterDTO;
 use App\Helper\JWTHelper;
 use App\Models\Employer;
 use App\Models\Jobseeker;
 use App\Models\Role;
 use App\Models\User;
+use App\Services\AuthService;
 use App\Services\JWTService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
+
+    protected AuthService $authService;
+
+    public function __construct(AuthService $authService)
+    {
+        $this->authService = $authService;
+    }
     /**
      * Register a new user
      */
     public function register(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'username' => 'required|string|unique:users|min:3|max:20',
-            'name' => 'required|string|max:50',
-            'email' => 'required|email|unique:users',
-            'phone' => 'nullable|string|unique:users',
-            'password' => 'required|string|min:8',
-            'candidate' => 'required|boolean',
-            'employer' => 'required|boolean',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 400);
-        }
-
-        // Ensure exactly one role is true
-        if ($request->candidate === $request->employer) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Exactly one role must be selected'
-            ], 400);
-        }
 
         try {
-            $roleSlug = $request->candidate ? 'candidate' : 'employer';
+            //  Create DTO from request (validates automatically)
+            $dto = RegisterDTO::fromRequest($request->all());
 
-            $role = Role::where('slug', $roleSlug)->firstOrFail();
+            // dd($dto->toArray());
 
-            $user = User::create([
-                'username' => $request->username,
-                'name' => $request->name,
-                'email' => $request->email,
-                'phone' => $request->phone,
-                'password' => bcrypt($request->password),
-                'role_id' => $role->id,
-                'is_active' => true,
-            ]);
-
-            if ($request->candidate) {
-                Jobseeker::create(['user_id' => $user->id]);
-            } else {
-                Employer::create(['user_id' => $user->id]);
-            }
-
-            $otp = JWTHelper::generateOTP();
-
-            $user->update([
-                'otp' => $otp,
-                'otp_expires_at' => now()->addMinutes(2),
-            ]);
-
-            JWTHelper::sendOTPEmail($user, $otp);
+            //  Register user via service
+            $result = $this->authService->register($dto);
 
             return response()->json([
                 'success' => true,
                 'message' => 'User registered successfully. Please verify your email.',
                 'data' => [
-                    'id' => $user->id,
-                    // 'username' => $user->username
+                    'id' => $result['user']->id,
                 ]
             ], 200);
+
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'errors' => $e->errors()
+            ], 400);
 
         } catch (\Exception $e) {
             return response()->json([
@@ -91,6 +61,78 @@ class AuthController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
+
+        // $validator = Validator::make($request->all(), [
+        //     'username' => 'required|string|unique:users|min:3|max:20',
+        //     'name' => 'required|string|max:50',
+        //     'email' => 'required|email|unique:users',
+        //     'phone' => 'nullable|string|unique:users',
+        //     'password' => 'required|string|min:8',
+        //     'candidate' => 'required|boolean',
+        //     'employer' => 'required|boolean',
+        // ]);
+
+        // if ($validator->fails()) {
+        //     return response()->json([
+        //         'success' => false,
+        //         'errors' => $validator->errors()
+        //     ], 400);
+        // }
+
+        // // Ensure exactly one role is true
+        // if ($request->candidate === $request->employer) {
+        //     return response()->json([
+        //         'success' => false,
+        //         'message' => 'Exactly one role must be selected'
+        //     ], 400);
+        // }
+
+        // try {
+        //     $roleSlug = $request->candidate ? 'candidate' : 'employer';
+
+        //     $role = Role::where('slug', $roleSlug)->firstOrFail();
+
+        //     $user = User::create([
+        //         'username' => $request->username,
+        //         'name' => $request->name,
+        //         'email' => $request->email,
+        //         'phone' => $request->phone,
+        //         'password' => bcrypt($request->password),
+        //         'role_id' => $role->id,
+        //         'is_active' => true,
+        //     ]);
+
+        //     if ($request->candidate) {
+        //         Jobseeker::create(['user_id' => $user->id]);
+        //     } else {
+        //         Employer::create(['user_id' => $user->id]);
+        //     }
+
+        //     $otp = JWTHelper::generateOTP();
+
+        //     $user->update([
+        //         'otp' => $otp,
+        //         'otp_expires_at' => now()->addMinutes(2),
+        //     ]);
+
+        //     JWTHelper::sendOTPEmail($user, $otp);
+
+        //     return response()->json([
+        //         'success' => true,
+        //         'message' => 'User registered successfully. Please verify your email.',
+        //         'data' => [
+        //             'id' => $user->id,
+        //             // 'username' => $user->username
+        //         ]
+        //     ], 200);
+
+        // } catch (\Exception $e) {
+        //     return response()->json([
+        //         'success' => false,
+        //         'message' => 'Registration failed',
+        //         'error' => $e->getMessage(),
+        //     ], 500);
+        // }
     }
 
 
