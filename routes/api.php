@@ -48,6 +48,10 @@ Route::group(['prefix' => 'v1'], function () {
 
     Route::post('/register', [AuthController::class, 'register']);
 
+    Route::post('/verify-registration', [AuthController::class, 'verifyRegistration']);
+
+
+
     Route::post('/request-otp', [AuthController::class, 'requestOTP']);
 
     Route::post('/verify-email', [AuthController::class, 'verifyEmail']);

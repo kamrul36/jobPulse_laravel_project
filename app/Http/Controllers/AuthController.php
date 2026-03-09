@@ -31,22 +31,44 @@ class AuthController extends Controller
     public function register(Request $request)
     {
 
+
         try {
             //  Create DTO from request (validates automatically)
             $dto = RegisterDTO::fromRequest($request->all());
 
-            // dd($dto->toArray());
+            // dd($dto);
 
             //  Register user via service
             $result = $this->authService->register($dto);
 
-            return response()->json([
+
+            $response = [
                 'success' => true,
-                'message' => 'User registered successfully. Please verify your email.',
+                'message' => 'OTP sent successfully. Please verify to complete registration.',
                 'data' => [
-                    'id' => $result['user']->id,
+                    'verification_id' => $result['user_id'],
+                    'expires_at' => $result['expires_at'],
                 ]
-            ], 200);
+            ];
+
+            // Include OTPs in dev environment only
+            if (config('app.env') === 'local') {
+                $response['data']['verification_email_code_dev_only'] = $result['email_otp'];
+                if ($result['phone_otp']) {
+                    $response['data']['verification_phone_code_dev_only'] = $result['phone_otp'];
+                }
+            }
+
+            return response()->json($response, 200);
+
+
+            // return response()->json([
+            //     'success' => true,
+            //     'message' => 'User registered successfully. Please verify your email.',
+            //     'data' => [
+            //         'id' => $result['user']->id,
+            //     ]
+            // ], 200);
 
         } catch (ValidationException $e) {
             return response()->json([
@@ -61,78 +83,6 @@ class AuthController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
-
-        // $validator = Validator::make($request->all(), [
-        //     'username' => 'required|string|unique:users|min:3|max:20',
-        //     'name' => 'required|string|max:50',
-        //     'email' => 'required|email|unique:users',
-        //     'phone' => 'nullable|string|unique:users',
-        //     'password' => 'required|string|min:8',
-        //     'candidate' => 'required|boolean',
-        //     'employer' => 'required|boolean',
-        // ]);
-
-        // if ($validator->fails()) {
-        //     return response()->json([
-        //         'success' => false,
-        //         'errors' => $validator->errors()
-        //     ], 400);
-        // }
-
-        // // Ensure exactly one role is true
-        // if ($request->candidate === $request->employer) {
-        //     return response()->json([
-        //         'success' => false,
-        //         'message' => 'Exactly one role must be selected'
-        //     ], 400);
-        // }
-
-        // try {
-        //     $roleSlug = $request->candidate ? 'candidate' : 'employer';
-
-        //     $role = Role::where('slug', $roleSlug)->firstOrFail();
-
-        //     $user = User::create([
-        //         'username' => $request->username,
-        //         'name' => $request->name,
-        //         'email' => $request->email,
-        //         'phone' => $request->phone,
-        //         'password' => bcrypt($request->password),
-        //         'role_id' => $role->id,
-        //         'is_active' => true,
-        //     ]);
-
-        //     if ($request->candidate) {
-        //         Jobseeker::create(['user_id' => $user->id]);
-        //     } else {
-        //         Employer::create(['user_id' => $user->id]);
-        //     }
-
-        //     $otp = JWTHelper::generateOTP();
-
-        //     $user->update([
-        //         'otp' => $otp,
-        //         'otp_expires_at' => now()->addMinutes(2),
-        //     ]);
-
-        //     JWTHelper::sendOTPEmail($user, $otp);
-
-        //     return response()->json([
-        //         'success' => true,
-        //         'message' => 'User registered successfully. Please verify your email.',
-        //         'data' => [
-        //             'id' => $user->id,
-        //             // 'username' => $user->username
-        //         ]
-        //     ], 200);
-
-        // } catch (\Exception $e) {
-        //     return response()->json([
-        //         'success' => false,
-        //         'message' => 'Registration failed',
-        //         'error' => $e->getMessage(),
-        //     ], 500);
-        // }
     }
 
 
@@ -148,9 +98,55 @@ class AuthController extends Controller
     //        "verification_id": "7ece8c9e-051c-11f1-890c-3db743ab6e34"}
 
 
+
+
     /**
-     * Login user
+     ----------------- Verify OTP and activate user ------------------------
      */
+    public function verifyRegistration(Request $request)
+    {
+        try {
+            // Simple validation
+            $validated = $request->validate([
+                'verification_id' => 'required|uuid|exists:users,id',
+                'otp' => 'required|string|size:6',
+            ]);
+
+            $result = $this->authService->verifyRegistration(
+                $validated['verification_id'],
+                $validated['otp']
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Registration completed successfully!',
+                'data' => [
+                    'user' => [
+                        'id' => $result['user']->id,
+                        'username' => $result['user']->username,
+                        'name' => $result['user']->name,
+                        'email' => $result['user']->email,
+                        'role' => $result['role'],
+                    ]
+                ]
+            ], 201);
+
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'errors' => $e->errors()
+            ], 400);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Verification failed',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /* ---------------Login user--------------------------*/
     public function login(Request $request)
     {
         $validator = Validator::make($request->all(), [
