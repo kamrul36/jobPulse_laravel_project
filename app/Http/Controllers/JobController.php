@@ -22,7 +22,9 @@ class JobController extends Controller
             'Get Jobs',
             'GET',
             200,
-            $jobs->items(),
+            // $jobs->items(),
+            JobResource::collection($jobs),
+
             [
                 'current_page' => $jobs->currentPage(),
                 'count' => $jobs->perPage(),
@@ -211,7 +213,7 @@ class JobController extends Controller
             $userRole = $request->auth_user_role;
 
             $job = Job::where('id', $id)
-                ->when($userRole === 'employer', fn($q) => $q->where('employer_id', $userId))
+                ->when($userRole === 'employer', fn($q) => $q->where('created_by', $userId))
                 ->first();
 
             if (!$job) {
@@ -227,8 +229,8 @@ class JobController extends Controller
                 'v1',
                 'Job published successfully',
                 'POST',
-                200,
-                new JobResource($job),
+                200
+                // new JobResource($job),
             );
 
         } catch (\Exception $e) {
@@ -299,7 +301,7 @@ class JobController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Job unpublished successfully',
-                'data' => $job
+                // 'data' => $job
             ], 200);
 
         } catch (\Exception $e) {

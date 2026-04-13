@@ -94,7 +94,7 @@ class EmployerController extends Controller
             $userId = $request->auth_user_id;
 
             // Get all jobs for this employer
-            $jobs = Job::where('employer_id', $userId)
+            $jobs = Job::where('created_by', $userId)
                 ->with('category') // If you have category relationship
                 ->orderBy('created_at', 'desc')
                 ->get();

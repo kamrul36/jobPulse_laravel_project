@@ -12,7 +12,7 @@ return new class extends Migration {
     {
         Schema::create('jobs', function (Blueprint $table) {
             $table->id();
-            $table->text('title');
+            $table->text('title')->required();
             $table->text('slug')->nullable();
             $table->text('description')->nullable();
             $table->string('salary')->nullable();

@@ -55,28 +55,6 @@ class AuthService
             'phone_otp' => config('app.env') === 'local' ? $phoneOtp : null,
             'expires_at' => $user->otp_expires_at,
         ];
-
-
-        // //  Create profile using relationship (cleaner)
-        // if ($dto->isCandidate) {
-        //     $user->jobseekerProfile()->create([]);
-        // } else {
-        //     $user->employerProfile()->create([]);
-        // }
-
-        // // Generate and send OTP
-        // $otp = JWTHelper::generateOTP();
-        // $user->update([
-        //     'otp' => $otp,
-        //     'otp_expires_at' => now()->addMinutes(10),
-        // ]);
-
-        // JWTHelper::sendOTPEmail($user, $otp);
-
-        // return [
-        //     'user' => $user->fresh(['role']),
-        //     'role' => $dto->getRoleSlug(),
-        // ];
     }
 
     /* Verify OTP and activate user  */

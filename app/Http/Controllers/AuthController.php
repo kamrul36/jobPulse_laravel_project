@@ -26,12 +26,10 @@ class AuthController extends Controller
         $this->authService = $authService;
     }
     /**
-     * Register a new user
+     ****************** Register a new user ************************
      */
     public function register(Request $request)
     {
-
-
         try {
             //  Create DTO from request (validates automatically)
             $dto = RegisterDTO::fromRequest($request->all());
@@ -58,17 +56,7 @@ class AuthController extends Controller
                     $response['data']['verification_phone_code_dev_only'] = $result['phone_otp'];
                 }
             }
-
             return response()->json($response, 200);
-
-
-            // return response()->json([
-            //     'success' => true,
-            //     'message' => 'User registered successfully. Please verify your email.',
-            //     'data' => [
-            //         'id' => $result['user']->id,
-            //     ]
-            // ], 200);
 
         } catch (ValidationException $e) {
             return response()->json([
@@ -85,24 +73,7 @@ class AuthController extends Controller
         }
     }
 
-
-    //register response
-
-    // {"version": "v6",
-    //      "success": true, 
-    //      "method": "POST", 
-    //      "operation": "Register new user.",
-    //       "remaining_time": 86402, 
-    //       "verification_email_code_dev_only": "752162", 
-    //       "verification_phone_code_dev_only": "142239",
-    //        "verification_id": "7ece8c9e-051c-11f1-890c-3db743ab6e34"}
-
-
-
-
-    /**
-     ----------------- Verify OTP and activate user ------------------------
-     */
+    /**  ----------------- Verify OTP and activate user ------------------------ */
     public function verifyRegistration(Request $request)
     {
         try {
@@ -121,13 +92,7 @@ class AuthController extends Controller
                 'success' => true,
                 'message' => 'Registration completed successfully!',
                 'data' => [
-                    'user' => [
-                        'id' => $result['user']->id,
-                        'username' => $result['user']->username,
-                        'name' => $result['user']->name,
-                        'email' => $result['user']->email,
-                        'role' => $result['role'],
-                    ]
+                    'id' => $result['user']->id,
                 ]
             ], 201);
 
