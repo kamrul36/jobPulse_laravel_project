@@ -35,6 +35,7 @@ class CheckJobPermission
 
             $userId = $decoded->id ?? null;
             $userRole = $decoded->role ?? null;
+            $userName = $decoded->sub ?? null;
 
             if (!$userId || !$userRole) {
                 return response()->json(['success' => false, 'message' => 'Invalid token'], 401);
@@ -52,6 +53,7 @@ class CheckJobPermission
             $request->merge([
                 'auth_user_id' => $userId,
                 'auth_user_role' => $userRole,
+                'auth_username' => $userName,
             ]);
 
             // Optional: Add a helper to get full user only when needed

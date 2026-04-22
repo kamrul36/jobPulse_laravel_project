@@ -93,6 +93,7 @@ class EmployerController extends Controller
             // Get authenticated user from CheckJobPermission middleware
             $userId = $request->auth_user_id;
 
+
             // Get all jobs for this employer
             $jobs = Job::where('created_by', $userId)
                 ->with('category') // If you have category relationship

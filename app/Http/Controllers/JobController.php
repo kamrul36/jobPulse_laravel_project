@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\DTOs\Job\CreateJobDTO;
 use App\Helper\ResponseHelper;
 use App\Models\Category;
 use App\Models\Job;
@@ -22,7 +23,6 @@ class JobController extends Controller
             'Get Jobs',
             'GET',
             200,
-            // $jobs->items(),
             JobResource::collection($jobs),
 
             [
@@ -62,55 +62,15 @@ class JobController extends Controller
     public function create(Request $request)
     {
         try {
-            // Get authenticated user data from CheckJobPermission middleware
-            $userId = $request->auth_user_id;
-
-            // Validate request
-            $validator = Validator::make($request->all(), [
-                'title' => 'required|max:255',
-                'category_id' => 'required|exists:categories,id',
-                'description' => 'nullable|string',
-                'skills' => 'required|string',
-                'salary' => 'nullable|string',
-                'deadline' => 'nullable|date',
-                'open_position' => 'nullable|string',
-                'location' => 'required|string',
-                'type' => 'required|in:full_time,remote,part_time,project_basis,freelance',
-                'experience' => 'nullable|string',
-                'isFeatured' => 'nullable|boolean'
-            ]);
-
-            if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'errors' => $validator->errors()
-                ], 422);
-            }
-
-            $validated = $validator->validated();
-
-            // Create job with authenticated user's ID as employer
-            $job = Job::create([
-                'title' => $validated['title'],
-                'description' => $validated['description'] ?? null,
-                'skills' => $validated['skills'],
-                'salary' => $validated['salary'] ?? null,
-                'deadline' => $validated['deadline'] ?? null,
-                'open_position' => $validated['open_position'] ?? null,
-                'location' => $validated['location'],
-                'experience' => $validated['experience'] ?? null,
-                'type' => $validated['type'],
-                'category_id' => $validated['category_id'],
-                'created_by' => $userId, // From JWT token
-                'isFeatured' => $validated['isFeatured'] ?? false,
-                'status' => 0, // Inactive by default (needs to be published)
-            ]);
+            $dto = CreateJobDTO::fromRequest($request->all());
+            $dto->setCreatedBy($request->auth_user_id);
+            $job = Job::create($dto->toArray());
 
             return response()->json([
                 'success' => true,
                 'message' => 'Job created successfully. Please publish it to make it visible.',
-                'data' => $job
-            ], 201);
+                'job_id' => $job->id
+            ], 200);
 
         } catch (\Exception $e) {
             return response()->json([
@@ -146,7 +106,7 @@ class JobController extends Controller
             }
 
             // Check if the job belongs to the authenticated employer
-            if ($job->employer_id !== $userId) {
+            if ($job->created_by !== $userId) {
                 return response()->json([
                     'success' => false,
                     'message' => 'You can only update your own jobs'
@@ -187,7 +147,7 @@ class JobController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Job updated successfully.',
-                'data' => $job
+                'job_id' => $job->id
             ], 200);
 
         } catch (\Exception $e) {
